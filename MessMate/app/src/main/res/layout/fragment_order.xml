@@ -1,14 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.OrderFragment">
+    android:orientation="vertical"
+    android:paddingTop="16dp">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="12dp"
+        android:text="My Orders &amp; Subscriptions"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <!-- RecyclerView for Orders -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvOrders"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-</FrameLayout>
+    <!-- Empty View when no orders exist -->
+    <TextView
+        android:id="@+id/tvEmptyOrders"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp"
+        android:text="No orders placed yet!"
+        android:textColor="#9E9E9E"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+</LinearLayout>
