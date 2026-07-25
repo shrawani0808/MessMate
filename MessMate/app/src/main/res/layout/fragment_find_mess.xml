@@ -1,14 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".FindMessFragment">
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="#F8F9FA">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Explore Messes"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#1E1E1E"
+        android:layout_margin="8dp" />
 
-</FrameLayout>
+    <EditText
+        android:id="@+id/etSearch"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:hint="Search mess or tiffin..."
+        android:paddingHorizontal="16dp"
+        android:background="@android:drawable/editbox_background"
+        android:layout_marginBottom="8dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvMessList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>
