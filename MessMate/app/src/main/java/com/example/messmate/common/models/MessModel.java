@@ -1,4 +1,4 @@
-package com.example.messmate.models;
+package com.example.messmate.common.models;
 public class MessModel {
     private int id;
     private String name;

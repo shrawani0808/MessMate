@@ -1,4 +1,4 @@
-package com.example.messmate.adapters;
+package com.example.messmate.user.ui.adapters;
 
 
 import android.content.Context;
@@ -10,7 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.messmate.R;
-import com.example.messmate.models.MessModel;
+import com.example.messmate.common.models.MessModel;
 import java.util.List;
 
 public class FeaturedMessAdapter extends RecyclerView.Adapter<FeaturedMessAdapter.ViewHolder> {

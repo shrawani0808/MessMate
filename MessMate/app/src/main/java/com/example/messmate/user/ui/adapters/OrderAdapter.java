@@ -1,4 +1,4 @@
-package com.example.messmate.adapters;
+package com.example.messmate.user.ui.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.messmate.R;
-import com.example.messmate.models.OrderItem;
+import com.example.messmate.common.models.OrderItem;
 
 import java.util.List;
 

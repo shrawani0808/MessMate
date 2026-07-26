@@ -1,4 +1,4 @@
-package com.example.messmate.ui;
+package com.example.messmate.user.ui;
 
 import android.os.Bundle;
 import android.text.Editable;
@@ -15,10 +15,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.messmate.R;
-import com.example.messmate.adapters.FeaturedMessAdapter;
-import com.example.messmate.adapters.MessAdapter; // Reusing your existing MessAdapter
-import com.example.messmate.database.DatabaseHelper;
-import com.example.messmate.models.MessModel;
+import com.example.messmate.user.ui.adapters.FeaturedMessAdapter;
+import com.example.messmate.user.ui.adapters.MessAdapter; // Reusing your existing MessAdapter
+import com.example.messmate.common.database.DatabaseHelper;
+import com.example.messmate.common.models.MessModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class HomeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_user_home, container, false);
 
         // Initialize Views
         rvFeatured = view.findViewById(R.id.rvFeaturedMesses);
