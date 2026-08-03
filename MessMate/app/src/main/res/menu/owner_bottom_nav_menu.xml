@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/ownerDashboardFragment"
+        android:icon="@drawable/ic_home"
+        android:title="Home" />
+
+    <item
+        android:id="@+id/memberListFragment"
+        android:icon="@drawable/ic_members"
+        android:title="Members" />
+
+    <item
+        android:id="@+id/tiffinFragment"
+        android:icon="@drawable/ic_tiffin"
+        android:title="Tiffin" />
+
+    <item
+        android:id="@+id/billingFragment"
+        android:icon="@drawable/ic_billing"
+        android:title="Billing" />
+
+    <item
+        android:id="@+id/ownerProfileFragment"
+        android:icon="@drawable/ic_profile"
+        android:title="Profile" />
+
+</menu>

@@ -1,7 +1,24 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.MessMate" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+
+    <style name="Theme.MessMate"
+        parent="Theme.Material3.Light.NoActionBar">
+
+        <item name="colorPrimary">@color/primary_green</item>
+        <item name="colorOnPrimary">@color/surface_white</item>
+
+        <item name="colorSecondary">@color/primary_green_dark</item>
+
+        <item name="android:colorAccent">@color/primary_green</item>
+
+        <item name="android:fontFamily">sans</item>
+
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/background_light</item>
+
+        <item name="android:navigationBarColor">@color/surface_white</item>
+
+        <item name="android:windowActionModeOverlay">true</item>
+
     </style>
+
 </resources>

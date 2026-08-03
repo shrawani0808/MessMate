@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/owner_nav_graph"
+    app:startDestination="@id/ownerDashboardFragment">
+
+    <fragment
+        android:id="@+id/ownerDashboardFragment"
+        android:name="com.example.messmate.presentation.owner.dashboard.OwnerDashboardFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_owner_dashboard" />
+
+    <fragment
+        android:id="@+id/memberListFragment"
+        android:name="com.example.messmate.presentation.owner.members.MemberListFragment"
+        android:label="Members"
+        tools:layout="@layout/fragment_member_list" />
+
+    <fragment
+        android:id="@+id/tiffinFragment"
+        android:name="com.example.messmate.presentation.owner.tiffin.TiffinFragment"
+        android:label="Tiffin"
+        tools:layout="@layout/fragment_tiffin" />
+
+    <fragment
+        android:id="@+id/billingFragment"
+        android:name="com.example.messmate.presentation.owner.billing.BillingFragment"
+        android:label="Billing"
+        tools:layout="@layout/fragment_billing" />
+
+    <fragment
+        android:id="@+id/ownerProfileFragment"
+        android:name="com.example.messmate.presentation.owner.profile.OwnerProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_owner_profile" />
+
+</navigation>
