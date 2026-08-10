@@ -12,7 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingStart="20dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="30dp">
 
         <!-- ========================= -->
         <!-- HEADER -->
@@ -36,7 +39,7 @@
                     android:layout_height="wrap_content"
                     android:text="Good Morning"
                     android:textColor="@android:color/darker_gray"
-                    android:textSize="14sp" />
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/txtOwnerName"
@@ -44,17 +47,30 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:text="Owner"
-                    android:textColor="@color/text_primary"
-                    android:textSize="26sp"
+                    android:textColor="@color/primary"
+                    android:textSize="29sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="Here's what's happening today"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="14sp" />
 
             </LinearLayout>
 
+            <!-- Profile Initial -->
+
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp">
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="27dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="1dp">
 
                 <TextView
                     android:id="@+id/txtProfileInitial"
@@ -63,7 +79,7 @@
                     android:gravity="center"
                     android:text="O"
                     android:textColor="@color/primary"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
             </com.google.android.material.card.MaterialCardView>
@@ -72,16 +88,18 @@
 
 
         <!-- ========================= -->
-        <!-- TODAY CARD -->
+        <!-- TODAY'S OVERVIEW -->
         <!-- ========================= -->
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            app:cardBackgroundColor="@color/primary"
+            android:layout_marginTop="26dp"
+            app:cardBackgroundColor="@android:color/white"
             app:cardCornerRadius="22dp"
-            app:cardElevation="2dp">
+            app:cardElevation="2dp"
+            app:strokeColor="#E8EFEA"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -89,27 +107,51 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <!-- Title -->
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Today's Overview"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp"
+                    android:textColor="@color/primary"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/txtTodayDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Today"
-                    android:textColor="#EDE7F6"
-                    android:textSize="13sp" />
+                <!-- Date -->
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="21dp"
+                        android:layout_height="21dp"
+                        android:contentDescription="Date"
+                        android:src="@drawable/ic_calendar"
+                        app:tint="@color/primary" />
+
+                    <TextView
+                        android:id="@+id/txtTodayDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="9dp"
+                        android:text="Today"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+
+                <!-- Collection Stats -->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="22dp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <!-- TIFFIN -->
@@ -118,26 +160,62 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                        <TextView
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="58dp"
+                            android:layout_height="58dp"
+                            app:cardBackgroundColor="#EAF7EE"
+                            app:cardCornerRadius="17dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="Tiffin"
+                                android:src="@drawable/ic_tiffin"
+                                app:tint="@color/primary" />
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tiffin Collected"
-                            android:textColor="#EDE7F6"
-                            android:textSize="13sp" />
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
 
-                        <TextView
-                            android:id="@+id/txtTiffinCollected"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="0"
-                            android:textColor="@android:color/white"
-                            android:textSize="28sp"
-                            android:textStyle="bold" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Tiffin Collected"
+                                android:textColor="@android:color/darker_gray"
+                                android:textSize="13sp" />
+
+                            <TextView
+                                android:id="@+id/txtTiffinCollected"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="0"
+                                android:textColor="@color/primary"
+                                android:textSize="29sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
+
+
+                    <!-- DIVIDER -->
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="55dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="#E6E6E6" />
 
 
                     <!-- DINNER -->
@@ -146,24 +224,50 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                        <TextView
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="58dp"
+                            android:layout_height="58dp"
+                            app:cardBackgroundColor="#FFF3E5"
+                            app:cardCornerRadius="17dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="Dinner"
+                                android:src="@drawable/ic_dinner"
+                                app:tint="#F28A00" />
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Dinner Collected"
-                            android:textColor="#EDE7F6"
-                            android:textSize="13sp" />
+                            android:layout_marginStart="10dp"
+                            android:orientation="vertical">
 
-                        <TextView
-                            android:id="@+id/txtDinnerCollected"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="0"
-                            android:textColor="@android:color/white"
-                            android:textSize="28sp"
-                            android:textStyle="bold" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Dinner Collected"
+                                android:textColor="@android:color/darker_gray"
+                                android:textSize="13sp" />
+
+                            <TextView
+                                android:id="@+id/txtDinnerCollected"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="0"
+                                android:textColor="#F28A00"
+                                android:textSize="29sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
@@ -175,18 +279,29 @@
 
 
         <!-- ========================= -->
-        <!-- MEMBER STAT -->
+        <!-- MESS SUMMARY -->
         <!-- ========================= -->
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="26dp"
-            android:text="Mess Summary"
-            android:textColor="@color/text_primary"
-            android:textSize="19sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="28dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Mess Summary"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+
+        <!-- Summary Cards -->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -198,31 +313,52 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="120dp"
-                android:layout_marginEnd="7dp"
+                android:layout_height="145dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
+                app:cardBackgroundColor="#F7FCF8"
                 app:cardCornerRadius="18dp"
-                app:cardElevation="1dp">
+                app:cardElevation="0dp"
+                app:strokeColor="#DCEFE2"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:cardBackgroundColor="#E7F6EC"
+                        app:cardCornerRadius="15dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:layout_width="27dp"
+                            android:layout_height="27dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Members"
+                            android:src="@drawable/ic_members"
+                            app:tint="@color/primary" />
+
+                    </com.google.android.material.card.MaterialCardView>
 
                     <TextView
                         android:id="@+id/txtTotalMembers"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
                         android:text="0"
                         android:textColor="@color/primary"
-                        android:textSize="30sp"
+                        android:textSize="29sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="1dp"
                         android:text="Total Members"
                         android:textColor="@android:color/darker_gray"
                         android:textSize="13sp" />
@@ -236,31 +372,52 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="120dp"
-                android:layout_marginStart="7dp"
+                android:layout_height="145dp"
+                android:layout_marginStart="6dp"
                 android:layout_weight="1"
+                app:cardBackgroundColor="#FFFBF5"
                 app:cardCornerRadius="18dp"
-                app:cardElevation="1dp">
+                app:cardElevation="0dp"
+                app:strokeColor="#F5E6D0"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:cardBackgroundColor="#FFF1DE"
+                        app:cardCornerRadius="15dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:layout_width="27dp"
+                            android:layout_height="27dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Pending"
+                            android:src="@drawable/ic_pending"
+                            app:tint="#F28A00" />
+
+                    </com.google.android.material.card.MaterialCardView>
 
                     <TextView
                         android:id="@+id/txtPending"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
                         android:text="0"
-                        android:textColor="@color/primary"
-                        android:textSize="30sp"
+                        android:textColor="#F28A00"
+                        android:textSize="29sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="1dp"
                         android:text="Pending Today"
                         android:textColor="@android:color/darker_gray"
                         android:textSize="13sp" />
@@ -273,39 +430,86 @@
 
 
         <!-- ========================= -->
-        <!-- INFORMATION -->
+        <!-- QUICK OVERVIEW -->
         <!-- ========================= -->
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_height="135dp"
+            android:layout_marginTop="18dp"
             android:layout_marginBottom="20dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="1dp">
+            app:cardBackgroundColor="@android:color/white"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="1dp"
+            app:strokeColor="#E8EFEA"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:padding="18dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Quick Overview"
-                    android:textColor="@color/text_primary"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/txtOverview"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="No collection data available for today."
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="14sp" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:contentDescription="Overview"
+                            android:src="@drawable/ic_overview"
+                            app:tint="@color/primary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="Quick Overview"
+                            android:textColor="@color/primary"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txtOverview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="No collection data available for today."
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+                <!-- Overview icon -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    app:cardBackgroundColor="#EAF7EE"
+                    app:cardCornerRadius="31dp"
+                    app:cardElevation="0dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Overview"
+                        android:src="@drawable/ic_overview"
+                        app:tint="@color/primary" />
+
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 

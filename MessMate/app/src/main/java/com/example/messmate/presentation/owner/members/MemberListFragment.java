@@ -218,157 +218,126 @@ public class MemberListFragment extends Fragment {
 
     private void showAddMemberDialog() {
 
-        LinearLayout layout =
-                new LinearLayout(requireContext());
-
-        layout.setOrientation(
-                LinearLayout.VERTICAL
-        );
-
-        int padding =
-                (int) (
-                        20 *
-                                getResources()
-                                        .getDisplayMetrics()
-                                        .density
-                );
-
-        layout.setPadding(
-                padding,
-                5,
-                padding,
-                0
-        );
-
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_add_member, null);
 
         EditText nameInput =
-                new EditText(requireContext());
-
-        nameInput.setHint(
-                "Member Name"
-        );
-
+                dialogView.findViewById(R.id.etMemberName);
 
         EditText emailInput =
-                new EditText(requireContext());
-
-        emailInput.setHint(
-                "Email Address"
-        );
-
-        emailInput.setInputType(
-                InputType.TYPE_CLASS_TEXT |
-                        InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-        );
-
+                dialogView.findViewById(R.id.etMemberEmail);
 
         EditText phoneInput =
-                new EditText(requireContext());
+                dialogView.findViewById(R.id.etMemberPhone);
 
-        phoneInput.setHint(
-                "Phone Number"
-        );
+        com.google.android.material.button.MaterialButton
+                btnCancel =
+                dialogView.findViewById(R.id.btnCancelMember);
 
-        phoneInput.setInputType(
-                InputType.TYPE_CLASS_PHONE
-        );
-
-
-        layout.addView(nameInput);
-
-        layout.addView(emailInput);
-
-        layout.addView(phoneInput);
+        com.google.android.material.button.MaterialButton
+                btnAdd =
+                dialogView.findViewById(R.id.btnAddMember);
 
 
         AlertDialog dialog =
-                new AlertDialog.Builder(
-                        requireContext()
-                )
-                        .setTitle("Add Member")
-                        .setView(layout)
-                        .setNegativeButton(
-                                "Cancel",
-                                null
-                        )
-                        .setPositiveButton(
-                                "Add",
-                                null
-                        )
+                new AlertDialog.Builder(requireContext())
+                        .setView(dialogView)
                         .create();
 
 
-        dialog.setOnShowListener(
-                dialogInterface -> {
+        dialog.setOnShowListener(dialogInterface -> {
 
-                    dialog.getButton(
-                            AlertDialog.BUTTON_POSITIVE
-                    ).setOnClickListener(
-                            v -> {
+            if (dialog.getWindow() != null) {
 
-                                String name =
-                                        nameInput
-                                                .getText()
-                                                .toString()
-                                                .trim();
-
-                                String email =
-                                        emailInput
-                                                .getText()
-                                                .toString()
-                                                .trim();
-
-                                String phone =
-                                        phoneInput
-                                                .getText()
-                                                .toString()
-                                                .trim();
+                dialog.getWindow().setBackgroundDrawableResource(
+                        android.R.color.transparent
+                );
+            }
 
 
-                                if (name.isEmpty()) {
-
-                                    nameInput.setError(
-                                            "Enter member name"
-                                    );
-
-                                    return;
-                                }
+            btnCancel.setOnClickListener(v ->
+                    dialog.dismiss()
+            );
 
 
-                                if (email.isEmpty()) {
+            btnAdd.setOnClickListener(v -> {
 
-                                    emailInput.setError(
-                                            "Enter email"
-                                    );
+                String name =
+                        nameInput.getText()
+                                .toString()
+                                .trim();
 
-                                    return;
-                                }
+                String email =
+                        emailInput.getText()
+                                .toString()
+                                .trim();
 
-
-                                if (phone.isEmpty()) {
-
-                                    phoneInput.setError(
-                                            "Enter phone number"
-                                    );
-
-                                    return;
-                                }
+                String phone =
+                        phoneInput.getText()
+                                .toString()
+                                .trim();
 
 
-                                addMember(
-                                        name,
-                                        email,
-                                        phone
-                                );
+                if (name.isEmpty()) {
 
-                                dialog.dismiss();
-                            }
+                    nameInput.setError(
+                            "Enter member name"
                     );
+
+                    nameInput.requestFocus();
+
+                    return;
                 }
-        );
+
+
+                if (email.isEmpty()) {
+
+                    emailInput.setError(
+                            "Enter email"
+                    );
+
+                    emailInput.requestFocus();
+
+                    return;
+                }
+
+
+                if (phone.isEmpty()) {
+
+                    phoneInput.setError(
+                            "Enter phone number"
+                    );
+
+                    phoneInput.requestFocus();
+
+                    return;
+                }
+
+
+                addMember(
+                        name,
+                        email,
+                        phone
+                );
+
+                dialog.dismiss();
+            });
+
+        });
 
 
         dialog.show();
+
+
+        if (dialog.getWindow() != null) {
+
+            dialog.getWindow().setLayout(
+                    (int) (350 * getResources()
+                            .getDisplayMetrics()
+                            .density),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
     }
 
 

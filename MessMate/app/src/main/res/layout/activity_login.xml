@@ -3,186 +3,334 @@
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_light"
-    android:fillViewport="true">
+
+    android:fillViewport="true"
+    android:clipToPadding="false"
+    android:id="@+id/loginmain"
+    android:background="@drawable/login_background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+
         android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:padding="24dp">
 
-        <!-- ========================= -->
-        <!-- APP LOGO / BRAND -->
-        <!-- ========================= -->
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="55dp"
-            android:text="MessMate"
-            android:textColor="@color/primary"
-            android:textSize="34sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Smart Mess &amp; Tiffin Management"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="14sp" />
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="28dp">
 
 
-        <!-- ========================= -->
+        <!-- ================================================= -->
+        <!-- MESSMATE LOGO -->
+        <!-- ================================================= -->
+
+        <ImageView
+            android:id="@+id/imgMessMateLogo"
+
+            android:layout_width="210dp"
+            android:layout_height="125dp"
+
+            android:layout_marginTop="8dp"
+
+            android:adjustViewBounds="true"
+            android:contentDescription="MessMate Logo"
+
+            android:scaleType="fitCenter"
+
+            android:src="@drawable/messmate_logo" />
+
+
+        <!-- ================================================= -->
         <!-- LOGIN CARD -->
-        <!-- ========================= -->
+        <!-- ================================================= -->
 
         <com.google.android.material.card.MaterialCardView
+
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="35dp"
+
+            android:layout_marginTop="2dp"
+
             app:cardBackgroundColor="@android:color/white"
-            app:cardCornerRadius="22dp"
-            app:cardElevation="3dp">
+            app:cardCornerRadius="24dp"
+            app:cardElevation="6dp"
+
+            app:strokeColor="#E8E8E8"
+            app:strokeWidth="1dp">
 
             <LinearLayout
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+
                 android:orientation="vertical"
-                android:padding="22dp">
+
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="22dp"
+                android:paddingBottom="18dp">
 
 
-                <!-- ========================= -->
-                <!-- TITLE -->
-                <!-- ========================= -->
+                <!-- WELCOME -->
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+
+                    android:gravity="center"
+
                     android:text="Welcome Back"
-                    android:textColor="@color/text_primary"
-                    android:textSize="24sp"
+
+                    android:textColor="@color/primary"
+                    android:textSize="21sp"
                     android:textStyle="bold" />
 
+
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:text="Login to continue to your account"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="14sp" />
-
-
-                <!-- ========================= -->
-                <!-- EMAIL -->
-                <!-- ========================= -->
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/emailLayout"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="25dp"
+
+                    android:layout_marginTop="5dp"
+
+                    android:gravity="center"
+
+                    android:text="Login to continue to your account"
+
+                    android:textColor="#858585"
+                    android:textSize="12sp" />
+
+
+                <!-- DECORATIVE DIVIDER -->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+
+                    android:layout_marginTop="8dp"
+
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="50dp"
+                        android:layout_height="1dp"
+                        android:background="#D0D0D0" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginStart="12dp"
+                        android:layout_marginEnd="12dp"
+
+                        android:text="✦"
+
+                        android:textColor="@color/primary"
+                        android:textSize="13sp" />
+
+                    <View
+                        android:layout_width="50dp"
+                        android:layout_height="1dp"
+                        android:background="#D0D0D0" />
+
+                </LinearLayout>
+
+
+                <!-- ================================================= -->
+                <!-- EMAIL -->
+                <!-- ================================================= -->
+
+                <com.google.android.material.textfield.TextInputLayout
+
+                    android:id="@+id/emailLayout"
+
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="7dp"
+
                     android:hint="Email Address"
+
+                    app:boxBackgroundColor="@android:color/white"
+
                     app:boxCornerRadiusBottomEnd="14dp"
                     app:boxCornerRadiusBottomStart="14dp"
                     app:boxCornerRadiusTopEnd="14dp"
                     app:boxCornerRadiusTopStart="14dp"
-                    app:startIconDrawable="@drawable/ic_email">
+
+                    app:boxStrokeColor="@color/primary"
+
+                    app:startIconDrawable="@drawable/ic_email"
+                    app:startIconTint="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
+
                         android:id="@+id/etEmail"
+
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+
                         android:inputType="textEmailAddress"
                         android:maxLines="1"
-                        android:paddingTop="15dp"
-                        android:paddingBottom="15dp" />
+
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp"
+
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
 
-                <!-- ========================= -->
+                <!-- ================================================= -->
                 <!-- PASSWORD -->
-                <!-- ========================= -->
+                <!-- ================================================= -->
 
                 <com.google.android.material.textfield.TextInputLayout
+
                     android:id="@+id/passwordLayout"
+
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+
+                    android:layout_marginTop="11dp"
+
                     android:hint="Password"
+
+                    app:boxBackgroundColor="@android:color/white"
+
                     app:boxCornerRadiusBottomEnd="14dp"
                     app:boxCornerRadiusBottomStart="14dp"
                     app:boxCornerRadiusTopEnd="14dp"
                     app:boxCornerRadiusTopStart="14dp"
+
+                    app:boxStrokeColor="@color/primary"
+
                     app:endIconMode="password_toggle"
-                    app:startIconDrawable="@drawable/ic_lock">
+                    app:endIconTint="@color/primary"
+
+                    app:startIconDrawable="@drawable/ic_lock"
+                    app:startIconTint="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
+
                         android:id="@+id/etPassword"
+
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+
                         android:inputType="textPassword"
                         android:maxLines="1"
-                        android:paddingTop="15dp"
-                        android:paddingBottom="15dp" />
+
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp"
+
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
 
-                <!-- ========================= -->
+                <!-- ================================================= -->
                 <!-- LOGIN BUTTON -->
-                <!-- ========================= -->
+                <!-- ================================================= -->
 
                 <com.google.android.material.button.MaterialButton
+
                     android:id="@+id/btnLogin"
+
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="25dp"
-                    android:text="Login"
-                    android:textSize="16sp"
+                    android:layout_height="52dp"
+
+                    android:layout_marginTop="19dp"
+
+                    android:text="Login    →"
+
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    android:textSize="15sp"
                     android:textStyle="bold"
-                    app:cornerRadius="14dp" />
+
+                    app:backgroundTint="@color/primary"
+
+                    app:cornerRadius="14dp"
+
+                    app:elevation="2dp" />
+
+
+                <!-- ================================================= -->
+                <!-- REGISTER -->
+                <!-- ================================================= -->
+
+                <TextView
+
+                    android:id="@+id/txtRegister"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="15dp"
+
+                    android:gravity="center"
+
+                    android:padding="8dp"
+
+                    android:text="Don't have an account? Register"
+
+                    android:textColor="@color/primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
 
 
-        <!-- ========================= -->
-        <!-- REGISTER -->
-        <!-- ========================= -->
+        <!-- ================================================= -->
+        <!-- SECURITY MESSAGE -->
+        <!-- ================================================= -->
 
-        <TextView
-            android:id="@+id/txtRegister"
+        <LinearLayout
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
-            android:padding="10dp"
-            android:text="Don't have an account? Register"
-            android:textColor="@color/primary"
-            android:textSize="15sp"
-            android:textStyle="bold" />
 
+            android:layout_marginTop="17dp"
 
-        <!-- ========================= -->
-        <!-- FOOTER -->
-        <!-- ========================= -->
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="35dp"
-            android:layout_marginBottom="20dp"
-            android:text="© 2026 MessMate"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="12sp" />
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:text="✓"
+
+                android:textColor="@color/primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:layout_marginStart="6dp"
+
+                android:text="Your data is safe with MessMate"
+
+                android:textColor="@color/primary"
+                android:textSize="10sp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
