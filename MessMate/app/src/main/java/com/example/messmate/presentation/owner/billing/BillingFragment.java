@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.InputType;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,13 +56,14 @@ public class BillingFragment extends Fragment {
 
     private Calendar selectedMonth;
 
-    // Default rate for members whose individual rate
-    // has not been configured yet.
     private double defaultTiffinRate = 50.0;
 
-    public BillingFragment() {
-        // Required empty public constructor
-    }
+    private final int GREEN = Color.rgb(47, 132, 100);
+    private final int LIGHT_GREEN = Color.rgb(235, 247, 241);
+    private final int WHITE = Color.WHITE;
+    private final int TEXT_PRIMARY = Color.rgb(35, 35, 35);
+    private final int TEXT_SECONDARY = Color.rgb(125, 125, 125);
+    private final int BORDER = Color.rgb(232, 236, 234);
 
 
     // =========================================================
@@ -92,18 +94,12 @@ public class BillingFragment extends Fragment {
             @NonNull View view,
             @Nullable Bundle savedInstanceState) {
 
-        super.onViewCreated(
-                view,
-                savedInstanceState
-        );
+        super.onViewCreated(view, savedInstanceState);
 
-        firestore =
-                FirebaseFirestore.getInstance();
+        firestore = FirebaseFirestore.getInstance();
 
         sessionManager =
-                new SessionManager(
-                        requireContext()
-                );
+                new SessionManager(requireContext());
 
         selectedMonth =
                 Calendar.getInstance();
@@ -168,6 +164,20 @@ public class BillingFragment extends Fragment {
 
 
     // =========================================================
+    // DP CONVERSION
+    // =========================================================
+
+    private int dp(float value) {
+
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                value,
+                getResources().getDisplayMetrics()
+        );
+    }
+
+
+    // =========================================================
     // MONTH
     // =========================================================
 
@@ -207,14 +217,9 @@ public class BillingFragment extends Fragment {
 
     private void loadOwnerDefaultRate() {
 
-        String ownerId =
-                getOwnerId();
+        String ownerId = getOwnerId();
 
-        if (
-                ownerId == null
-                        ||
-                        ownerId.isEmpty()
-        ) {
+        if (ownerId == null || ownerId.isEmpty()) {
 
             loadMembers();
 
@@ -229,23 +234,16 @@ public class BillingFragment extends Fragment {
                 .addOnSuccessListener(
                         documentSnapshot -> {
 
-                            if (
-                                    documentSnapshot.exists()
-                            ) {
+                            if (documentSnapshot.exists()) {
 
                                 Double rate =
                                         documentSnapshot.getDouble(
                                                 "tiffinRate"
                                         );
 
-                                if (
-                                        rate != null
-                                                &&
-                                                rate > 0
-                                ) {
+                                if (rate != null && rate > 0) {
 
-                                    defaultTiffinRate =
-                                            rate;
+                                    defaultTiffinRate = rate;
                                 }
                             }
 
@@ -253,10 +251,7 @@ public class BillingFragment extends Fragment {
                         }
                 )
                 .addOnFailureListener(
-                        e -> {
-
-                            loadMembers();
-                        }
+                        e -> loadMembers()
                 );
     }
 
@@ -271,14 +266,9 @@ public class BillingFragment extends Fragment {
             return;
         }
 
-        String ownerId =
-                getOwnerId();
+        String ownerId = getOwnerId();
 
-        if (
-                ownerId == null
-                        ||
-                        ownerId.isEmpty()
-        ) {
+        if (ownerId == null || ownerId.isEmpty()) {
 
             Toast.makeText(
                     requireContext(),
@@ -310,10 +300,7 @@ public class BillingFragment extends Fragment {
                             memberContainer.removeAllViews();
 
 
-                            if (
-                                    queryDocumentSnapshots
-                                            .isEmpty()
-                            ) {
+                            if (queryDocumentSnapshots.isEmpty()) {
 
                                 showNoMembers();
 
@@ -349,8 +336,7 @@ public class BillingFragment extends Fragment {
 
 
                                 if (
-                                        name == null
-                                                ||
+                                        name == null ||
                                                 name.trim().isEmpty()
                                 ) {
 
@@ -359,8 +345,7 @@ public class BillingFragment extends Fragment {
 
 
                                 if (
-                                        memberRate == null
-                                                ||
+                                        memberRate == null ||
                                                 memberRate <= 0
                                 ) {
 
@@ -419,7 +404,6 @@ public class BillingFragment extends Fragment {
                 rate
         );
 
-
         firestore
                 .collection("members")
                 .document(memberId)
@@ -450,10 +434,10 @@ public class BillingFragment extends Fragment {
         );
 
         emptyLayout.setPadding(
-                20,
-                80,
-                20,
-                20
+                dp(20),
+                dp(80),
+                dp(20),
+                dp(20)
         );
 
 
@@ -504,8 +488,22 @@ public class BillingFragment extends Fragment {
 
         emptyLayout.addView(title);
 
+        LinearLayout.LayoutParams subtitleParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+
+        subtitleParams.setMargins(
+                0,
+                dp(5),
+                0,
+                0
+        );
+
         emptyLayout.addView(
-                subtitle
+                subtitle,
+                subtitleParams
         );
 
 
@@ -513,83 +511,9 @@ public class BillingFragment extends Fragment {
                 emptyLayout,
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        300
+                        dp(300)
                 )
         );
-    }
-
-
-    // =========================================================
-    // DP HELPER
-    // =========================================================
-
-    private int dp(float value) {
-
-        return (int) (
-                value *
-                        getResources()
-                                .getDisplayMetrics()
-                                .density
-        );
-    }
-
-
-    // =========================================================
-    // CREATE GREEN BUTTON BACKGROUND
-    // =========================================================
-
-    private GradientDrawable createGreenButtonBackground() {
-
-        GradientDrawable background =
-                new GradientDrawable();
-
-        background.setColor(
-                Color.rgb(
-                        47,
-                        132,
-                        100
-                )
-        );
-
-        background.setCornerRadius(
-                dp(12)
-        );
-
-        return background;
-    }
-
-
-    // =========================================================
-    // CREATE LIGHT BUTTON BACKGROUND
-    // =========================================================
-
-    private GradientDrawable createLightButtonBackground() {
-
-        GradientDrawable background =
-                new GradientDrawable();
-
-        background.setColor(
-                Color.rgb(
-                        235,
-                        247,
-                        241
-                )
-        );
-
-        background.setCornerRadius(
-                dp(10)
-        );
-
-        background.setStroke(
-                dp(1),
-                Color.rgb(
-                        210,
-                        235,
-                        224
-                )
-        );
-
-        return background;
     }
 
 
@@ -605,7 +529,7 @@ public class BillingFragment extends Fragment {
 
 
         // -----------------------------------------------------
-        // MAIN CARD
+        // CARD
         // -----------------------------------------------------
 
         LinearLayout card =
@@ -619,35 +543,29 @@ public class BillingFragment extends Fragment {
 
         card.setPadding(
                 dp(16),
+                dp(15),
                 dp(16),
-                dp(16),
+                dp(15)
+        );
+
+
+        GradientDrawable cardBackground =
+                new GradientDrawable();
+
+        cardBackground.setColor(WHITE);
+
+        cardBackground.setCornerRadius(
                 dp(16)
         );
 
-
-        GradientDrawable background =
-                new GradientDrawable();
-
-        background.setColor(
-                Color.WHITE
-        );
-
-        background.setCornerRadius(
-                dp(18)
-        );
-
-        background.setStroke(
+        cardBackground.setStroke(
                 dp(1),
-                Color.rgb(
-                        232,
-                        232,
-                        232
-                )
+                BORDER
         );
 
 
         card.setBackground(
-                background
+                cardBackground
         );
 
 
@@ -689,6 +607,8 @@ public class BillingFragment extends Fragment {
         );
 
 
+        // INITIAL
+
         TextView initial =
                 new TextView(
                         requireContext()
@@ -698,7 +618,9 @@ public class BillingFragment extends Fragment {
                 Gravity.CENTER
         );
 
-        initial.setTextSize(16);
+        initial.setTextSize(
+                15
+        );
 
         initial.setTypeface(
                 Typeface.DEFAULT,
@@ -706,19 +628,14 @@ public class BillingFragment extends Fragment {
         );
 
         initial.setTextColor(
-                Color.rgb(
-                        47,
-                        132,
-                        100
-                )
+                GREEN
         );
 
 
         String firstLetter = "M";
 
         if (
-                name != null
-                        &&
+                name != null &&
                         !name.trim().isEmpty()
         ) {
 
@@ -733,10 +650,7 @@ public class BillingFragment extends Fragment {
                             );
         }
 
-
-        initial.setText(
-                firstLetter
-        );
+        initial.setText(firstLetter);
 
 
         GradientDrawable initialBackground =
@@ -747,11 +661,7 @@ public class BillingFragment extends Fragment {
         );
 
         initialBackground.setColor(
-                Color.rgb(
-                        235,
-                        247,
-                        241
-                )
+                LIGHT_GREEN
         );
 
 
@@ -762,8 +672,8 @@ public class BillingFragment extends Fragment {
 
         LinearLayout.LayoutParams initialParams =
                 new LinearLayout.LayoutParams(
-                        dp(44),
-                        dp(44)
+                        dp(40),
+                        dp(40)
                 );
 
 
@@ -807,18 +717,12 @@ public class BillingFragment extends Fragment {
                         requireContext()
                 );
 
-        tvName.setText(
-                name
-        );
+        tvName.setText(name);
 
-        tvName.setTextSize(16);
+        tvName.setTextSize(15);
 
         tvName.setTextColor(
-                Color.rgb(
-                        30,
-                        30,
-                        30
-                )
+                TEXT_PRIMARY
         );
 
         tvName.setTypeface(
@@ -827,14 +731,11 @@ public class BillingFragment extends Fragment {
         );
 
 
-        memberInfo.addView(
-                tvName
-        );
+        memberInfo.addView(tvName);
 
 
         if (
-                email != null
-                        &&
+                email != null &&
                         !email.trim().isEmpty()
         ) {
 
@@ -843,24 +744,12 @@ public class BillingFragment extends Fragment {
                             requireContext()
                     );
 
-            tvEmail.setText(
-                    email
-            );
+            tvEmail.setText(email);
 
-            tvEmail.setTextSize(12);
+            tvEmail.setTextSize(11);
 
             tvEmail.setTextColor(
-                    Color.rgb(
-                            130,
-                            130,
-                            130
-                    )
-            );
-
-            tvEmail.setSingleLine(true);
-
-            tvEmail.setEllipsize(
-                    android.text.TextUtils.TruncateAt.END
+                    TEXT_SECONDARY
             );
 
 
@@ -891,13 +780,11 @@ public class BillingFragment extends Fragment {
         );
 
 
-        card.addView(
-                header
-        );
+        card.addView(header);
 
 
         // -----------------------------------------------------
-        // RATE SECTION
+        // RATE ROW
         // -----------------------------------------------------
 
         LinearLayout rateRow =
@@ -922,15 +809,13 @@ public class BillingFragment extends Fragment {
 
         rateRowParams.setMargins(
                 0,
-                dp(15),
+                dp(14),
                 0,
                 dp(12)
         );
 
 
-        // -----------------------------------------------------
         // RATE INFO
-        // -----------------------------------------------------
 
         LinearLayout rateInfo =
                 new LinearLayout(
@@ -962,11 +847,7 @@ public class BillingFragment extends Fragment {
         rateLabel.setTextSize(11);
 
         rateLabel.setTextColor(
-                Color.rgb(
-                        130,
-                        130,
-                        130
-                )
+                TEXT_SECONDARY
         );
 
 
@@ -979,14 +860,10 @@ public class BillingFragment extends Fragment {
                 formatRate(memberRate)
         );
 
-        rateValue.setTextSize(16);
+        rateValue.setTextSize(15);
 
         rateValue.setTextColor(
-                Color.rgb(
-                        35,
-                        35,
-                        35
-                )
+                TEXT_PRIMARY
         );
 
         rateValue.setTypeface(
@@ -1009,9 +886,7 @@ public class BillingFragment extends Fragment {
         );
 
 
-        rateInfo.addView(
-                rateLabel
-        );
+        rateInfo.addView(rateLabel);
 
         rateInfo.addView(
                 rateValue,
@@ -1025,9 +900,9 @@ public class BillingFragment extends Fragment {
         );
 
 
-        // =====================================================
+        // -----------------------------------------------------
         // EDIT RATE BUTTON
-        // =====================================================
+        // -----------------------------------------------------
 
         Button editRateButton =
                 new Button(
@@ -1038,36 +913,16 @@ public class BillingFragment extends Fragment {
                 "Edit Rate"
         );
 
-        editRateButton.setAllCaps(
-                false
-        );
+        editRateButton.setAllCaps(false);
 
-        editRateButton.setTextSize(
-                12
-        );
-
-        editRateButton.setTypeface(
-                Typeface.DEFAULT,
-                Typeface.BOLD
-        );
+        editRateButton.setTextSize(12);
 
         editRateButton.setTextColor(
-                Color.rgb(
-                        47,
-                        132,
-                        100
-                )
+                GREEN
         );
 
         editRateButton.setGravity(
                 Gravity.CENTER
-        );
-
-        editRateButton.setPadding(
-                dp(8),
-                0,
-                dp(8),
-                0
         );
 
         editRateButton.setMinWidth(0);
@@ -1078,24 +933,35 @@ public class BillingFragment extends Fragment {
 
         editRateButton.setMinimumHeight(0);
 
+        editRateButton.setPadding(
+                dp(13),
+                0,
+                dp(13),
+                0
+        );
+
+
+        GradientDrawable editBackground =
+                new GradientDrawable();
+
+        editBackground.setColor(
+                LIGHT_GREEN
+        );
+
+        editBackground.setCornerRadius(
+                dp(20)
+        );
+
         editRateButton.setBackground(
-                createLightButtonBackground()
+                editBackground
         );
 
 
-        LinearLayout.LayoutParams editRateParams =
+        LinearLayout.LayoutParams editParams =
                 new LinearLayout.LayoutParams(
-                        dp(96),
-                        dp(40)
+                        dp(92),
+                        dp(36)
                 );
-
-        editRateParams.gravity =
-                Gravity.CENTER_VERTICAL;
-
-
-        editRateButton.setLayoutParams(
-                editRateParams
-        );
 
 
         editRateButton.setOnClickListener(
@@ -1110,7 +976,8 @@ public class BillingFragment extends Fragment {
 
 
         rateRow.addView(
-                editRateButton
+                editRateButton,
+                editParams
         );
 
 
@@ -1130,11 +997,7 @@ public class BillingFragment extends Fragment {
                 );
 
         divider.setBackgroundColor(
-                Color.rgb(
-                        235,
-                        235,
-                        235
-                )
+                Color.rgb(240, 242, 241)
         );
 
 
@@ -1158,9 +1021,9 @@ public class BillingFragment extends Fragment {
         );
 
 
-        // =====================================================
+        // -----------------------------------------------------
         // CALCULATE MONTHLY BILL BUTTON
-        // =====================================================
+        // -----------------------------------------------------
 
         Button calculateButton =
                 new Button(
@@ -1171,12 +1034,12 @@ public class BillingFragment extends Fragment {
                 "Calculate Monthly Bill"
         );
 
-        calculateButton.setAllCaps(
-                false
-        );
+        calculateButton.setAllCaps(false);
 
-        calculateButton.setTextSize(
-                13
+        calculateButton.setTextSize(13);
+
+        calculateButton.setTextColor(
+                WHITE
         );
 
         calculateButton.setTypeface(
@@ -1184,19 +1047,8 @@ public class BillingFragment extends Fragment {
                 Typeface.BOLD
         );
 
-        calculateButton.setTextColor(
-                Color.WHITE
-        );
-
         calculateButton.setGravity(
                 Gravity.CENTER
-        );
-
-        calculateButton.setPadding(
-                dp(12),
-                0,
-                dp(12),
-                0
         );
 
         calculateButton.setMinWidth(0);
@@ -1207,14 +1059,34 @@ public class BillingFragment extends Fragment {
 
         calculateButton.setMinimumHeight(0);
 
+        calculateButton.setPadding(
+                dp(16),
+                0,
+                dp(16),
+                0
+        );
+
+
+        GradientDrawable calculateBackground =
+                new GradientDrawable();
+
+        calculateBackground.setColor(
+                GREEN
+        );
+
+        calculateBackground.setCornerRadius(
+                dp(12)
+        );
+
+
         calculateButton.setBackground(
-                createGreenButtonBackground()
+                calculateBackground
         );
 
 
         LinearLayout.LayoutParams calculateParams =
                 new LinearLayout.LayoutParams(
-                        dp(190),
+                        ViewGroup.LayoutParams.MATCH_PARENT,
                         dp(44)
                 );
 
@@ -1222,11 +1094,9 @@ public class BillingFragment extends Fragment {
                 Gravity.CENTER_HORIZONTAL;
 
 
-        final String finalName =
-                name;
+        final String finalName = name;
 
-        final String finalEmail =
-                email;
+        final String finalEmail = email;
 
 
         calculateButton.setOnClickListener(
@@ -1252,8 +1122,7 @@ public class BillingFragment extends Fragment {
     // FORMAT RATE
     // =========================================================
 
-    private String formatRate(
-            double rate) {
+    private String formatRate(double rate) {
 
         return String.format(
                 Locale.getDefault(),
@@ -1264,13 +1133,12 @@ public class BillingFragment extends Fragment {
 
 
     // =========================================================
-    // EDIT MEMBER RATE
+    // EDIT MEMBER RATE DIALOG
     // =========================================================
 
     private void showEditMemberRateDialog(
             String memberId,
             TextView rateValue) {
-
 
         EditText input =
                 new EditText(
@@ -1284,20 +1152,17 @@ public class BillingFragment extends Fragment {
                         InputType.TYPE_NUMBER_FLAG_DECIMAL
         );
 
-
         input.setHint(
                 "Enter rate per tiffin"
         );
 
-
         input.setSingleLine(true);
-
 
         input.setPadding(
                 dp(20),
-                dp(12),
+                dp(10),
                 dp(20),
-                dp(12)
+                dp(10)
         );
 
 
@@ -1338,9 +1203,7 @@ public class BillingFragment extends Fragment {
                                             .setMessage(
                                                     "Set the rate for this member"
                                             )
-                                            .setView(
-                                                    input
-                                            )
+                                            .setView(input)
                                             .setNegativeButton(
                                                     "Cancel",
                                                     null
@@ -1356,70 +1219,65 @@ public class BillingFragment extends Fragment {
                                     d -> {
 
                                         dialog.getButton(
-                                                AlertDialog.BUTTON_POSITIVE
-                                        ).setOnClickListener(
-                                                v -> {
+                                                        AlertDialog.BUTTON_POSITIVE
+                                                )
+                                                .setOnClickListener(
+                                                        v -> {
 
-                                                    String value =
-                                                            input.getText()
-                                                                    .toString()
-                                                                    .trim();
-
-
-                                                    if (
-                                                            value.isEmpty()
-                                                    ) {
-
-                                                        input.setError(
-                                                                "Enter rate"
-                                                        );
-
-                                                        return;
-                                                    }
+                                                            String value =
+                                                                    input.getText()
+                                                                            .toString()
+                                                                            .trim();
 
 
-                                                    double newRate;
+                                                            if (value.isEmpty()) {
 
-
-                                                    try {
-
-                                                        newRate =
-                                                                Double.parseDouble(
-                                                                        value
+                                                                input.setError(
+                                                                        "Enter rate"
                                                                 );
 
-                                                    } catch (
-                                                            Exception e
-                                                    ) {
-
-                                                        input.setError(
-                                                                "Invalid rate"
-                                                        );
-
-                                                        return;
-                                                    }
+                                                                return;
+                                                            }
 
 
-                                                    if (
-                                                            newRate <= 0
-                                                    ) {
-
-                                                        input.setError(
-                                                                "Rate must be greater than 0"
-                                                        );
-
-                                                        return;
-                                                    }
+                                                            double newRate;
 
 
-                                                    saveMemberRate(
-                                                            memberId,
-                                                            newRate,
-                                                            rateValue,
-                                                            dialog
-                                                    );
-                                                }
-                                        );
+                                                            try {
+
+                                                                newRate =
+                                                                        Double.parseDouble(
+                                                                                value
+                                                                        );
+
+                                                            } catch (Exception e) {
+
+                                                                input.setError(
+                                                                        "Invalid rate"
+                                                                );
+
+                                                                return;
+                                                            }
+
+
+                                                            if (newRate <= 0) {
+
+                                                                input.setError(
+                                                                        "Rate must be greater than 0"
+                                                                );
+
+                                                                return;
+                                                            }
+
+
+                                                            saveMemberRate(
+                                                                    memberId,
+                                                                    newRate,
+                                                                    rateValue,
+                                                                    dialog
+                                                            );
+                                                        }
+                                                );
                                     }
                             );
 
@@ -1450,10 +1308,8 @@ public class BillingFragment extends Fragment {
             TextView rateValue,
             AlertDialog dialog) {
 
-
         Map<String, Object> data =
                 new HashMap<>();
-
 
         data.put(
                 "tiffinRate",
@@ -1472,9 +1328,7 @@ public class BillingFragment extends Fragment {
                         unused -> {
 
                             rateValue.setText(
-                                    formatRate(
-                                            newRate
-                                    )
+                                    formatRate(newRate)
                             );
 
 
@@ -1511,16 +1365,10 @@ public class BillingFragment extends Fragment {
             String memberName,
             String email) {
 
-
-        String ownerId =
-                getOwnerId();
+        String ownerId = getOwnerId();
 
 
-        if (
-                ownerId == null
-                        ||
-                        ownerId.isEmpty()
-        ) {
+        if (ownerId == null || ownerId.isEmpty()) {
 
             Toast.makeText(
                     requireContext(),
@@ -1539,7 +1387,6 @@ public class BillingFragment extends Fragment {
                 .addOnSuccessListener(
                         memberDocument -> {
 
-
                             Double memberRate =
                                     memberDocument.getDouble(
                                             "tiffinRate"
@@ -1547,8 +1394,7 @@ public class BillingFragment extends Fragment {
 
 
                             if (
-                                    memberRate == null
-                                            ||
+                                    memberRate == null ||
                                             memberRate <= 0
                             ) {
 
@@ -1625,32 +1471,47 @@ public class BillingFragment extends Fragment {
         Calendar end =
                 (Calendar) start.clone();
 
-
         end.add(
                 Calendar.MONTH,
                 1
         );
 
 
+        /*
+         * IMPORTANT:
+         *
+         * Your TiffinFragment stores records in:
+         *
+         * tiffin_records
+         *
+         * and stores the date as:
+         *
+         * yyyy-MM-dd
+         *
+         * Therefore we read that collection here.
+         */
+
         firestore
-                .collection("tiffinRecords")
+                .collection("tiffin_records")
                 .whereEqualTo(
                         "ownerId",
                         ownerId
                 )
                 .whereEqualTo(
-                        "memberId",
+                        "memberDocumentId",
                         memberId
                 )
                 .get()
                 .addOnSuccessListener(
                         query -> {
 
-                            double totalTiffins =
-                                    0;
+                            double totalTiffins = 0;
 
-                            int totalDays =
-                                    0;
+                            int totalDays = 0;
+
+                            int fullTiffins = 0;
+
+                            int halfTiffins = 0;
 
 
                             for (
@@ -1658,103 +1519,102 @@ public class BillingFragment extends Fragment {
                                     query
                             ) {
 
-
-                                Object dateObject =
-                                        document.get(
+                                String dateString =
+                                        document.getString(
                                                 "date"
                                         );
 
 
                                 if (
-                                        dateObject == null
+                                        dateString == null ||
+                                                dateString.trim().isEmpty()
                                 ) {
 
                                     continue;
                                 }
 
 
-                                Date recordDate =
-                                        null;
+                                Date recordDate;
 
-
-                                if (
-                                        dateObject
-                                                instanceof Timestamp
-                                ) {
+                                try {
 
                                     recordDate =
-                                            (
-                                                    (
-                                                            Timestamp
-                                                            )
-                                                            dateObject
-                                            ).toDate();
-                                }
+                                            new SimpleDateFormat(
+                                                    "yyyy-MM-dd",
+                                                    Locale.getDefault()
+                                            ).parse(
+                                                    dateString
+                                            );
 
-
-                                if (
-                                        recordDate == null
-                                ) {
+                                } catch (Exception e) {
 
                                     continue;
                                 }
 
 
-                                if (
-                                        recordDate.before(
-                                                start.getTime()
-                                        )
-                                                ||
-                                                !recordDate.before(
-                                                        end.getTime()
+                                if (recordDate == null) {
+                                    continue;
+                                }
+
+
+                                Calendar recordCalendar =
+                                        Calendar.getInstance();
+
+                                recordCalendar.setTime(
+                                        recordDate
+                                );
+
+
+                                /*
+                                 * Compare year + month directly.
+                                 *
+                                 * This is safer because your
+                                 * tiffin_records date is stored
+                                 * as a String.
+                                 */
+
+                                boolean sameMonth =
+                                        recordCalendar.get(
+                                                Calendar.YEAR
+                                        ) ==
+                                                selectedMonth.get(
+                                                        Calendar.YEAR
                                                 )
-                                ) {
+                                                &&
+                                                recordCalendar.get(
+                                                        Calendar.MONTH
+                                                ) ==
+                                                        selectedMonth.get(
+                                                                Calendar.MONTH
+                                                        );
 
+
+                                if (!sameMonth) {
                                     continue;
                                 }
 
 
-                                Double quantity =
-                                        document.getDouble(
-                                                "quantity"
+                                String tiffin =
+                                        document.getString(
+                                                "tiffin"
                                         );
 
 
-                                if (
-                                        quantity == null
+                                if ("full".equalsIgnoreCase(tiffin)) {
+
+                                    fullTiffins++;
+
+                                    totalTiffins += 1.0;
+
+                                    totalDays++;
+
+                                } else if (
+                                        "half".equalsIgnoreCase(tiffin)
                                 ) {
 
+                                    halfTiffins++;
 
-                                    Boolean picked =
-                                            document.getBoolean(
-                                                    "picked"
-                                            );
-
-
-                                    if (
-                                            picked != null
-                                                    &&
-                                                    picked
-                                    ) {
-
-                                        quantity =
-                                                1.0;
-
-                                    } else {
-
-                                        quantity =
-                                                0.0;
-                                    }
-                                }
-
-
-                                totalTiffins +=
-                                        quantity;
-
-
-                                if (
-                                        quantity > 0
-                                ) {
+                                    totalTiffins += 0.5;
 
                                     totalDays++;
                                 }
@@ -1762,8 +1622,7 @@ public class BillingFragment extends Fragment {
 
 
                             double totalAmount =
-                                    totalTiffins
-                                            * memberRate;
+                                    totalTiffins * memberRate;
 
 
                             showBillDialog(
@@ -1771,6 +1630,8 @@ public class BillingFragment extends Fragment {
                                     email,
                                     totalTiffins,
                                     totalDays,
+                                    fullTiffins,
+                                    halfTiffins,
                                     memberRate,
                                     totalAmount
                             );
@@ -1799,6 +1660,8 @@ public class BillingFragment extends Fragment {
             String email,
             double totalTiffins,
             int totalDays,
+            int fullTiffins,
+            int halfTiffins,
             double memberRate,
             double totalAmount) {
 
@@ -1826,10 +1689,16 @@ public class BillingFragment extends Fragment {
                         memberRate
                 )
                         + "\n"
+                        + "Full Tiffins: "
+                        + fullTiffins
+                        + "\n"
+                        + "Half Tiffins: "
+                        + halfTiffins
+                        + "\n"
                         + "Tiffin Quantity: "
                         + String.format(
                         Locale.getDefault(),
-                        "%.2f",
+                        "%.1f",
                         totalTiffins
                 )
                         + "\n"
@@ -1920,15 +1789,9 @@ public class BillingFragment extends Fragment {
                 new android.graphics.Paint();
 
 
-        paint.setColor(
-                Color.BLACK
-        );
+        paint.setColor(Color.BLACK);
 
-
-        paint.setTextSize(
-                24
-        );
-
+        paint.setTextSize(24);
 
         paint.setTypeface(
                 Typeface.DEFAULT_BOLD
@@ -1943,9 +1806,7 @@ public class BillingFragment extends Fragment {
         );
 
 
-        paint.setTextSize(
-                20
-        );
+        paint.setTextSize(20);
 
 
         canvas.drawText(
@@ -1960,14 +1821,10 @@ public class BillingFragment extends Fragment {
                 Typeface.DEFAULT
         );
 
-
-        paint.setTextSize(
-                15
-        );
+        paint.setTextSize(15);
 
 
-        int y =
-                150;
+        int y = 150;
 
 
         canvas.drawText(
@@ -1982,8 +1839,7 @@ public class BillingFragment extends Fragment {
 
 
         if (
-                email != null
-                        &&
+                email != null &&
                         !email.trim().isEmpty()
         ) {
 
@@ -2063,7 +1919,7 @@ public class BillingFragment extends Fragment {
         canvas.drawText(
                 String.format(
                         Locale.getDefault(),
-                        "%.2f",
+                        "%.1f",
                         totalTiffins
                 ),
                 400,
@@ -2079,10 +1935,7 @@ public class BillingFragment extends Fragment {
                 Typeface.DEFAULT_BOLD
         );
 
-
-        paint.setTextSize(
-                20
-        );
+        paint.setTextSize(20);
 
 
         canvas.drawText(
@@ -2102,10 +1955,7 @@ public class BillingFragment extends Fragment {
                 Typeface.DEFAULT
         );
 
-
-        paint.setTextSize(
-                12
-        );
+        paint.setTextSize(12);
 
 
         canvas.drawText(
@@ -2116,9 +1966,7 @@ public class BillingFragment extends Fragment {
         );
 
 
-        pdfDocument.finishPage(
-                page
-        );
+        pdfDocument.finishPage(page);
 
 
         String safeName =
@@ -2144,7 +1992,6 @@ public class BillingFragment extends Fragment {
 
 
         try {
-
 
             ContentValues values =
                     new ContentValues();
@@ -2179,7 +2026,6 @@ public class BillingFragment extends Fragment {
 
             if (uri == null) {
 
-
                 Toast.makeText(
                         requireContext(),
                         "Could not create PDF",
@@ -2196,9 +2042,7 @@ public class BillingFragment extends Fragment {
             OutputStream outputStream =
                     requireContext()
                             .getContentResolver()
-                            .openOutputStream(
-                                    uri
-                            );
+                            .openOutputStream(uri);
 
 
             if (outputStream != null) {
@@ -2222,7 +2066,6 @@ public class BillingFragment extends Fragment {
 
 
         } catch (Exception e) {
-
 
             pdfDocument.close();
 
