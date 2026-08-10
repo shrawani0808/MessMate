@@ -1,35 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="14dp"
+
+    android:layout_marginStart="2dp"
+    android:layout_marginEnd="2dp"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+
     app:cardBackgroundColor="@android:color/white"
-    app:cardCornerRadius="20dp"
+    app:cardCornerRadius="18dp"
     app:cardElevation="2dp"
-    app:strokeColor="#E7F0E9"
+    app:strokeColor="#E8ECEA"
     app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="150dp"
-        android:padding="16dp">
+        android:minHeight="138dp"
+        android:padding="15dp">
 
 
-        <!-- ============================= -->
+        <!-- ================================================= -->
         <!-- MEMBER INITIAL -->
-        <!-- ============================= -->
+        <!-- ================================================= -->
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/initialContainer"
-            android:layout_width="66dp"
-            android:layout_height="66dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+
             app:cardBackgroundColor="#E8F6EA"
-            app:cardCornerRadius="33dp"
+            app:cardCornerRadius="26dp"
             app:cardElevation="0dp"
+
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -37,91 +43,116 @@
                 android:id="@+id/txtInitial"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+
                 android:gravity="center"
+
                 android:text="M"
                 android:textColor="@color/primary"
-                android:textSize="27sp"
+                android:textSize="21sp"
                 android:textStyle="bold" />
 
         </com.google.android.material.card.MaterialCardView>
 
 
-        <!-- ============================= -->
+        <!-- ================================================= -->
         <!-- MEMBER NAME -->
-        <!-- ============================= -->
+        <!-- ================================================= -->
 
         <TextView
             android:id="@+id/txtMemberName"
+
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="48dp"
+
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="52dp"
+
             android:ellipsize="end"
             android:maxLines="1"
+
             android:text="Member Name"
             android:textColor="@color/text_primary"
-            android:textSize="19sp"
+            android:textSize="16sp"
             android:textStyle="bold"
+
             app:layout_constraintStart_toEndOf="@id/initialContainer"
             app:layout_constraintTop_toTopOf="@id/initialContainer"
-            app:layout_constraintEnd_toStartOf="@id/btnDeleteMember" />
+            app:layout_constraintEnd_toStartOf="@id/deleteContainer" />
 
 
-        <!-- ============================= -->
+        <!-- ================================================= -->
         <!-- PHONE -->
-        <!-- ============================= -->
+        <!-- ================================================= -->
 
         <TextView
             android:id="@+id/txtMemberPhone"
+
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="5dp"
+
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginEnd="52dp"
+
             android:ellipsize="end"
             android:maxLines="1"
+
             android:text="9876543210"
-            android:textColor="#68716C"
-            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+
             app:layout_constraintStart_toEndOf="@id/initialContainer"
             app:layout_constraintTop_toBottomOf="@id/txtMemberName"
-            app:layout_constraintEnd_toStartOf="@id/btnDeleteMember" />
+            app:layout_constraintEnd_toStartOf="@id/deleteContainer" />
 
 
-        <!-- ============================= -->
+        <!-- ================================================= -->
         <!-- EMAIL -->
-        <!-- ============================= -->
+        <!-- ================================================= -->
 
         <TextView
             android:id="@+id/txtMemberEmail"
+
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="4dp"
+
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="52dp"
+
             android:ellipsize="end"
             android:maxLines="1"
+
             android:text="member@gmail.com"
-            android:textColor="#68716C"
-            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+
             app:layout_constraintStart_toEndOf="@id/initialContainer"
             app:layout_constraintTop_toBottomOf="@id/txtMemberPhone"
-            app:layout_constraintEnd_toStartOf="@id/btnDeleteMember" />
+            app:layout_constraintEnd_toStartOf="@id/deleteContainer" />
 
 
-        <!-- ============================= -->
+        <!-- ================================================= -->
         <!-- MEMBER STATUS -->
-        <!-- ============================= -->
+        <!-- ================================================= -->
 
         <LinearLayout
             android:id="@+id/statusBadge"
+
             android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:layout_marginStart="82dp"
+            android:layout_height="28dp"
+
+            android:layout_marginStart="64dp"
             android:layout_marginTop="10dp"
+
             android:background="@drawable/bg_active_badge"
+
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="10dp"
-            android:paddingEnd="12dp"
+
+            android:paddingStart="9dp"
+            android:paddingEnd="11dp"
+
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/initialContainer">
 
@@ -133,37 +164,48 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+
+                android:layout_marginStart="5dp"
+
                 android:text="Active"
                 android:textColor="@color/primary"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
 
 
-        <!-- ============================= -->
+        <!-- ================================================= -->
         <!-- DELETE BUTTON -->
-        <!-- ============================= -->
+        <!-- ================================================= -->
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/deleteContainer"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+
             app:cardBackgroundColor="#FFF0E2"
-            app:cardCornerRadius="14dp"
+            app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
+
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintTop_toTopOf="parent">
 
             <ImageButton
                 android:id="@+id/btnDeleteMember"
+
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+
                 android:background="?attr/selectableItemBackgroundBorderless"
+
                 android:contentDescription="Delete member"
-                android:padding="13dp"
+
+                android:padding="11dp"
+
                 android:src="@drawable/ic_delete_member"
+
                 app:tint="#F28A18" />
 
         </com.google.android.material.card.MaterialCardView>

@@ -1,5 +1,6 @@
 package com.example.messmate.presentation.owner.dashboard;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,9 +10,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.messmate.R;
 import com.example.messmate.presentation.auth.SessionManager;
+import com.example.messmate.presentation.owner.profile.OwnerProfileFragment;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -80,6 +83,11 @@ public class OwnerDashboardFragment extends Fragment {
 
             txtOverview.setText("Owner session not found.");
         }
+
+        txtProfileInitial.setOnClickListener(v -> {
+            NavHostFragment.findNavController(OwnerDashboardFragment.this)
+                    .navigate(R.id.ownerProfileFragment);
+        });
     }
 
 
