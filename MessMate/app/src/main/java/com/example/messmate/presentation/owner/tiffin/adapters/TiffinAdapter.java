@@ -3,10 +3,8 @@ package com.example.messmate.presentation.owner.tiffin.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.messmate.R;
 import com.example.messmate.presentation.owner.members.model.Member;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
 
 import java.util.List;
@@ -21,7 +20,9 @@ import java.util.List;
 public class TiffinAdapter
         extends RecyclerView.Adapter<TiffinAdapter.TiffinViewHolder> {
 
+
     public interface OnCollectionChangedListener {
+
         void onCollectionChanged(
                 Member member,
                 String tiffin,
@@ -40,6 +41,7 @@ public class TiffinAdapter
             OnCollectionChangedListener listener) {
 
         this.memberList = memberList;
+
         this.listener = listener;
     }
 
@@ -71,9 +73,14 @@ public class TiffinAdapter
                 memberList.get(position);
 
 
+        // =====================================================
+        // MEMBER INFORMATION
+        // =====================================================
+
         holder.txtMemberName.setText(
                 member.getName()
         );
+
 
         holder.txtMemberPhone.setText(
                 member.getPhone()
@@ -81,6 +88,7 @@ public class TiffinAdapter
 
 
         String name = member.getName();
+
 
         if (name != null &&
                 !name.trim().isEmpty()) {
@@ -96,53 +104,40 @@ public class TiffinAdapter
         }
 
 
+        // =====================================================
+        // RESET LISTENER BEFORE RESETTING VALUES
+        // =====================================================
+
         holder.radioTiffin
                 .setOnCheckedChangeListener(null);
-
 
         holder.switchDinner
                 .setOnCheckedChangeListener(null);
 
 
-        // Default state
+        // =====================================================
+        // DEFAULT STATE
+        // =====================================================
+
         holder.radioNone.setChecked(true);
 
         holder.switchDinner.setChecked(false);
 
 
-        holder.radioTiffin.setOnCheckedChangeListener(
-                (group, checkedId) -> {
+        // =====================================================
+        // SUBMIT BUTTON
+        // =====================================================
+
+        holder.btnSubmit.setOnClickListener(
+                v -> {
 
                     String tiffin = "none";
 
-                    if (checkedId ==
-                            R.id.radioFull) {
-
-                        tiffin = "full";
-
-                    } else if (checkedId ==
-                            R.id.radioHalf) {
-
-                        tiffin = "half";
-                    }
-
-                    listener.onCollectionChanged(
-                            member,
-                            tiffin,
-                            holder.switchDinner.isChecked()
-                    );
-                }
-        );
-
-
-        holder.switchDinner.setOnCheckedChangeListener(
-                (buttonView, isChecked) -> {
-
-                    String tiffin = "none";
 
                     int selectedId =
                             holder.radioTiffin
                                     .getCheckedRadioButtonId();
+
 
                     if (selectedId ==
                             R.id.radioFull) {
@@ -155,10 +150,15 @@ public class TiffinAdapter
                         tiffin = "half";
                     }
 
+
+                    boolean dinner =
+                            holder.switchDinner.isChecked();
+
+
                     listener.onCollectionChanged(
                             member,
                             tiffin,
-                            isChecked
+                            dinner
                     );
                 }
         );
@@ -172,20 +172,34 @@ public class TiffinAdapter
     }
 
 
+    // =========================================================
+    // VIEW HOLDER
+    // =========================================================
+
     static class TiffinViewHolder
             extends RecyclerView.ViewHolder {
 
+
         TextView txtInitial;
+
         TextView txtMemberName;
+
         TextView txtMemberPhone;
+
 
         RadioGroup radioTiffin;
 
         RadioButton radioFull;
+
         RadioButton radioHalf;
+
         RadioButton radioNone;
 
+
         MaterialSwitch switchDinner;
+
+
+        MaterialButton btnSubmit;
 
 
         public TiffinViewHolder(
@@ -239,6 +253,12 @@ public class TiffinAdapter
             switchDinner =
                     itemView.findViewById(
                             R.id.switchDinner
+                    );
+
+
+            btnSubmit =
+                    itemView.findViewById(
+                            R.id.btnSubmit
                     );
         }
     }

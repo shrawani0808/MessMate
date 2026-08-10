@@ -1,28 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/background_light">
 
-    <!-- HEADER -->
+    <!-- ================= HEADER ================= -->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingStart="18dp"
+        android:paddingStart="20dp"
         android:paddingTop="18dp"
-        android:paddingEnd="18dp"
+        android:paddingEnd="20dp"
         android:paddingBottom="6dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Billing"
-            android:textColor="@color/text_primary"
-            android:textSize="25sp"
+            android:textColor="@color/primary_green"
+            android:textSize="27sp"
             android:textStyle="bold" />
 
         <TextView
@@ -32,64 +34,175 @@
             android:layout_marginTop="2dp"
             android:text="August 2026"
             android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
+            android:textSize="14sp" />
 
     </LinearLayout>
 
 
-    <!-- MONTH NAVIGATION -->
-    <LinearLayout
+    <!-- ================= CALENDAR CARD ================= -->
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/calendarCard"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginStart="14dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="14dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:background="@drawable/bg_billing_rate"
-        android:paddingStart="2dp"
-        android:paddingEnd="2dp">
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="1dp"
+        app:strokeColor="#E5E9E7"
+        app:strokeWidth="1dp">
 
-        <ImageButton
-            android:id="@+id/btnPreviousMonth"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Previous month"
-            android:padding="11dp"
-            android:src="@drawable/ic_arrow_left"
-            app:tint="@color/primary_green" />
-
-        <TextView
-            android:id="@+id/tvSelectedMonth"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="August 2026"
-            android:textColor="@color/text_primary"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:padding="14dp">
 
-        <ImageButton
-            android:id="@+id/btnNextMonth"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Next month"
-            android:padding="11dp"
-            android:src="@drawable/ic_arrow_right"
-            app:tint="@color/primary_green" />
+            <!-- MONTH NAVIGATION -->
 
-    </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-    <!-- MEMBERS HEADER -->
+                <ImageButton
+                    android:id="@+id/btnPreviousMonth"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_calendar_arrow"
+                    android:contentDescription="Previous month"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_arrow_left"
+                    app:tint="@color/primary_green" />
+
+                <TextView
+                    android:id="@+id/tvSelectedMonth"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="August 2026"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <ImageButton
+                    android:id="@+id/btnNextMonth"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_calendar_arrow"
+                    android:contentDescription="Next month"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_arrow_right"
+                    app:tint="@color/primary_green" />
+
+            </LinearLayout>
+
+
+            <!-- ACTUAL MONTHLY CALENDAR -->
+
+            <LinearLayout
+                android:id="@+id/calendarContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical" />
+
+
+            <!-- LEGEND -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_calendar_legend"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:background="@drawable/bg_dot_full" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="7dp"
+                        android:text="Full Tiffin"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:background="@drawable/bg_dot_half" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="7dp"
+                        android:text="Half Tiffin"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:background="@drawable/bg_dot_none" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="7dp"
+                        android:text="Not Collected"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+
+    <!-- ================= MEMBERS HEADER ================= -->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
+        android:layout_marginStart="20dp"
         android:layout_marginTop="14dp"
-        android:layout_marginEnd="18dp"
+        android:layout_marginEnd="20dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -98,39 +211,38 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Members"
-            android:textColor="@color/text_primary"
-            android:textSize="17sp"
+            android:textColor="@color/primary_green"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Individual rates"
-            android:textColor="@color/text_secondary"
-            android:textSize="11sp" />
+            android:textColor="@color/primary_green"
+            android:textSize="12sp" />
 
     </LinearLayout>
 
 
-    <!-- MEMBERS LIST -->
+    <!-- ================= MEMBER LIST ================= -->
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="4dp"
         android:layout_weight="1"
-        android:fillViewport="true"
-        android:clipToPadding="false">
+        android:clipToPadding="false"
+        android:fillViewport="true">
 
         <LinearLayout
             android:id="@+id/memberContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:paddingBottom="20dp" >
-
-        </LinearLayout>
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="85dp" />
 
     </ScrollView>
 

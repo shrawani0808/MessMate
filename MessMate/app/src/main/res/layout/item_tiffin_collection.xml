@@ -3,19 +3,31 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
+
+    android:layout_marginStart="2dp"
+    android:layout_marginEnd="2dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="5dp"
+
     app:cardCornerRadius="18dp"
-    app:cardElevation="1dp">
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
 
-        <!-- MEMBER INFO -->
+        android:paddingStart="14dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp">
+
+
+        <!-- MEMBER HEADER -->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -23,115 +35,212 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+
+            <!-- MEMBER INITIAL -->
+
             <TextView
                 android:id="@+id/txtInitial"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:background="@drawable/member_initial_background"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+
+                android:background="@drawable/bg_member_avatar"
+
                 android:gravity="center"
+
                 android:text="R"
                 android:textColor="@color/primary"
-                android:textSize="17sp"
+                android:textSize="22sp"
                 android:textStyle="bold" />
+
+
+            <!-- MEMBER DETAILS -->
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+
                 android:layout_marginStart="12dp"
                 android:layout_weight="1"
+
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/txtMemberName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Rahul"
+
+                    android:text="Ram"
                     android:textColor="@color/text_primary"
-                    android:textSize="16sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/txtMemberPhone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:text="9876543210"
+
+                    android:layout_marginTop="2dp"
+
+                    android:text="0987654321"
                     android:textColor="@android:color/darker_gray"
-                    android:textSize="12sp" />
+                    android:textSize="13sp" />
 
             </LinearLayout>
 
         </LinearLayout>
 
 
-        <!-- TIFFIN -->
+        <!-- TIFFIN STATUS -->
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Tiffin"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp"
+
+            android:layout_marginTop="9dp"
+
+            android:text="Tiffin Status"
+            android:textColor="@color/primary"
+            android:textSize="15sp"
             android:textStyle="bold" />
+
+
+        <!-- TIFFIN OPTIONS -->
 
         <RadioGroup
             android:id="@+id/radioTiffin"
+
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_height="46dp"
+
+            android:layout_marginTop="5dp"
+
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+
+            android:background="@drawable/bg_tiffin_options">
+
 
             <RadioButton
                 android:id="@+id/radioFull"
+
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+
                 android:layout_weight="1"
+
+                android:buttonTint="@color/primary"
+
+                android:gravity="center_vertical"
+
+                android:paddingStart="4dp"
+
                 android:text="Full"
+                android:textColor="@color/text_primary"
                 android:textSize="13sp" />
+
 
             <RadioButton
                 android:id="@+id/radioHalf"
+
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+
                 android:layout_weight="1"
+
+                android:buttonTint="#FF7043"
+
+                android:gravity="center_vertical"
+
+                android:paddingStart="4dp"
+
                 android:text="Half"
+                android:textColor="@color/text_primary"
                 android:textSize="13sp" />
+
 
             <RadioButton
                 android:id="@+id/radioNone"
+
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+
                 android:layout_weight="1"
+
+                android:buttonTint="@color/red"
+
+                android:gravity="center_vertical"
+
+                android:paddingStart="4dp"
+
                 android:text="Not Collected"
+                android:textColor="@color/text_primary"
                 android:textSize="13sp" />
 
         </RadioGroup>
 
 
-        <!-- DINNER -->
+        <!-- DINNER + SWITCH + SUBMIT -->
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+
+            android:layout_marginTop="7dp"
+
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+
                 android:text="Dinner"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
+                android:textColor="@color/primary"
+                android:textSize="15sp"
                 android:textStyle="bold" />
+
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/switchDinner"
+
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Collected"
-                android:textSize="12sp" />
+
+                android:layout_marginStart="4dp"
+
+                android:scaleX="0.80"
+                android:scaleY="0.80"
+
+                android:text="" />
+
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+
+            <!-- SUBMIT BUTTON -->
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmit"
+
+                android:layout_width="112dp"
+                android:layout_height="42dp"
+
+                android:text="Submit"
+                android:textAllCaps="false"
+                android:textColor="@color/primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+
+                app:cornerRadius="12dp"
+
+                app:strokeColor="@color/primary"
+                app:strokeWidth="1dp"
+
+                app:backgroundTint="@android:color/transparent" />
 
         </LinearLayout>
 

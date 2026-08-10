@@ -56,7 +56,7 @@
                     android:layout_gravity="start|center_vertical"
                     android:background="@drawable/bg_auth_icon_button"
                     android:padding="10dp"
-                    android:src="@drawable/ic_arrow_back"
+                    android:src="@drawable/bg_calendar_arrow"
                     android:contentDescription="Back"
                     app:tint="@color/primary" />
 

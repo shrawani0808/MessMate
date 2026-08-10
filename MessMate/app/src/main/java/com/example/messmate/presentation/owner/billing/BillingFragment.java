@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.pdf.PdfDocument;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,11 +30,12 @@ import androidx.fragment.app.Fragment;
 
 import com.example.messmate.R;
 import com.example.messmate.presentation.auth.SessionManager;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.SetOptions;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -65,6 +68,15 @@ public class BillingFragment extends Fragment {
     private final int TEXT_SECONDARY = Color.rgb(125, 125, 125);
     private final int BORDER = Color.rgb(232, 236, 234);
 
+    // Calendar popup colors
+    private final int FULL_TIFFIN_BG = Color.rgb(232, 247, 238);
+    private final int FULL_TIFFIN_TEXT = Color.rgb(35, 120, 75);
+
+    private final int HALF_TIFFIN_BG = Color.rgb(255, 239, 222);
+    private final int HALF_TIFFIN_TEXT = Color.rgb(225, 105, 20);
+
+    private final int NOT_COLLECTED_BG = Color.rgb(255, 232, 232);
+    private final int NOT_COLLECTED_TEXT = Color.rgb(220, 55, 55);
 
     // =========================================================
     // CREATE VIEW
@@ -84,7 +96,6 @@ public class BillingFragment extends Fragment {
         );
     }
 
-
     // =========================================================
     // VIEW CREATED
     // =========================================================
@@ -103,7 +114,6 @@ public class BillingFragment extends Fragment {
 
         selectedMonth =
                 Calendar.getInstance();
-
 
         tvBillingMonthSubtitle =
                 view.findViewById(
@@ -130,11 +140,9 @@ public class BillingFragment extends Fragment {
                         R.id.memberContainer
                 );
 
-
         updateMonthText();
 
         loadOwnerDefaultRate();
-
 
         btnPreviousMonth.setOnClickListener(v -> {
 
@@ -147,7 +155,6 @@ public class BillingFragment extends Fragment {
 
             loadMembers();
         });
-
 
         btnNextMonth.setOnClickListener(v -> {
 
@@ -162,7 +169,6 @@ public class BillingFragment extends Fragment {
         });
     }
 
-
     // =========================================================
     // DP CONVERSION
     // =========================================================
@@ -175,7 +181,6 @@ public class BillingFragment extends Fragment {
                 getResources().getDisplayMetrics()
         );
     }
-
 
     // =========================================================
     // MONTH
@@ -196,7 +201,6 @@ public class BillingFragment extends Fragment {
         tvBillingMonthSubtitle.setText(month);
     }
 
-
     // =========================================================
     // GET OWNER ID
     // =========================================================
@@ -209,7 +213,6 @@ public class BillingFragment extends Fragment {
 
         return sessionManager.getUid();
     }
-
 
     // =========================================================
     // LOAD OWNER DEFAULT RATE
@@ -225,7 +228,6 @@ public class BillingFragment extends Fragment {
 
             return;
         }
-
 
         firestore
                 .collection("owners")
@@ -255,7 +257,6 @@ public class BillingFragment extends Fragment {
                 );
     }
 
-
     // =========================================================
     // LOAD MEMBERS
     // =========================================================
@@ -279,9 +280,7 @@ public class BillingFragment extends Fragment {
             return;
         }
 
-
         memberContainer.removeAllViews();
-
 
         firestore
                 .collection("members")
@@ -299,14 +298,12 @@ public class BillingFragment extends Fragment {
 
                             memberContainer.removeAllViews();
 
-
                             if (queryDocumentSnapshots.isEmpty()) {
 
                                 showNoMembers();
 
                                 return;
                             }
-
 
                             for (
                                     QueryDocumentSnapshot document :
@@ -316,24 +313,20 @@ public class BillingFragment extends Fragment {
                                 String memberId =
                                         document.getId();
 
-
                                 String name =
                                         document.getString(
                                                 "name"
                                         );
-
 
                                 String email =
                                         document.getString(
                                                 "email"
                                         );
 
-
                                 Double memberRate =
                                         document.getDouble(
                                                 "tiffinRate"
                                         );
-
 
                                 if (
                                         name == null ||
@@ -342,7 +335,6 @@ public class BillingFragment extends Fragment {
 
                                     name = "Member";
                                 }
-
 
                                 if (
                                         memberRate == null ||
@@ -357,7 +349,6 @@ public class BillingFragment extends Fragment {
                                             memberRate
                                     );
                                 }
-
 
                                 addMemberCard(
                                         memberId,
@@ -387,7 +378,6 @@ public class BillingFragment extends Fragment {
                 );
     }
 
-
     // =========================================================
     // SAVE INITIAL MEMBER RATE
     // =========================================================
@@ -412,7 +402,6 @@ public class BillingFragment extends Fragment {
                         SetOptions.merge()
                 );
     }
-
 
     // =========================================================
     // NO MEMBERS
@@ -440,7 +429,6 @@ public class BillingFragment extends Fragment {
                 dp(20)
         );
 
-
         TextView title =
                 new TextView(
                         requireContext()
@@ -465,7 +453,6 @@ public class BillingFragment extends Fragment {
                 Gravity.CENTER
         );
 
-
         TextView subtitle =
                 new TextView(
                         requireContext()
@@ -484,7 +471,6 @@ public class BillingFragment extends Fragment {
         subtitle.setGravity(
                 Gravity.CENTER
         );
-
 
         emptyLayout.addView(title);
 
@@ -506,7 +492,6 @@ public class BillingFragment extends Fragment {
                 subtitleParams
         );
 
-
         memberContainer.addView(
                 emptyLayout,
                 new LinearLayout.LayoutParams(
@@ -515,7 +500,6 @@ public class BillingFragment extends Fragment {
                 )
         );
     }
-
 
     // =========================================================
     // MEMBER CARD
@@ -526,11 +510,6 @@ public class BillingFragment extends Fragment {
             String name,
             String email,
             double memberRate) {
-
-
-        // -----------------------------------------------------
-        // CARD
-        // -----------------------------------------------------
 
         LinearLayout card =
                 new LinearLayout(
@@ -548,7 +527,6 @@ public class BillingFragment extends Fragment {
                 dp(15)
         );
 
-
         GradientDrawable cardBackground =
                 new GradientDrawable();
 
@@ -563,11 +541,9 @@ public class BillingFragment extends Fragment {
                 BORDER
         );
 
-
         card.setBackground(
                 cardBackground
         );
-
 
         LinearLayout.LayoutParams cardParams =
                 new LinearLayout.LayoutParams(
@@ -582,12 +558,22 @@ public class BillingFragment extends Fragment {
                 dp(6)
         );
 
-
         memberContainer.addView(
                 card,
                 cardParams
         );
 
+        // =====================================================
+        // MEMBER CARD CLICK
+        // =====================================================
+
+        card.setOnClickListener(v -> {
+
+            showMemberTiffinCalendar(
+                    memberId,
+                    name
+            );
+        });
 
         // -----------------------------------------------------
         // MEMBER HEADER
@@ -605,9 +591,6 @@ public class BillingFragment extends Fragment {
         header.setGravity(
                 Gravity.CENTER_VERTICAL
         );
-
-
-        // INITIAL
 
         TextView initial =
                 new TextView(
@@ -631,7 +614,6 @@ public class BillingFragment extends Fragment {
                 GREEN
         );
 
-
         String firstLetter = "M";
 
         if (
@@ -652,7 +634,6 @@ public class BillingFragment extends Fragment {
 
         initial.setText(firstLetter);
 
-
         GradientDrawable initialBackground =
                 new GradientDrawable();
 
@@ -664,11 +645,9 @@ public class BillingFragment extends Fragment {
                 LIGHT_GREEN
         );
 
-
         initial.setBackground(
                 initialBackground
         );
-
 
         LinearLayout.LayoutParams initialParams =
                 new LinearLayout.LayoutParams(
@@ -676,12 +655,10 @@ public class BillingFragment extends Fragment {
                         dp(40)
                 );
 
-
         header.addView(
                 initial,
                 initialParams
         );
-
 
         // -----------------------------------------------------
         // NAME + EMAIL
@@ -696,7 +673,6 @@ public class BillingFragment extends Fragment {
                 LinearLayout.VERTICAL
         );
 
-
         LinearLayout.LayoutParams infoParams =
                 new LinearLayout.LayoutParams(
                         0,
@@ -710,7 +686,6 @@ public class BillingFragment extends Fragment {
                 0,
                 0
         );
-
 
         TextView tvName =
                 new TextView(
@@ -730,9 +705,7 @@ public class BillingFragment extends Fragment {
                 Typeface.BOLD
         );
 
-
         memberInfo.addView(tvName);
-
 
         if (
                 email != null &&
@@ -752,7 +725,6 @@ public class BillingFragment extends Fragment {
                     TEXT_SECONDARY
             );
 
-
             LinearLayout.LayoutParams emailParams =
                     new LinearLayout.LayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -766,22 +738,18 @@ public class BillingFragment extends Fragment {
                     0
             );
 
-
             memberInfo.addView(
                     tvEmail,
                     emailParams
             );
         }
 
-
         header.addView(
                 memberInfo,
                 infoParams
         );
 
-
         card.addView(header);
-
 
         // -----------------------------------------------------
         // RATE ROW
@@ -800,7 +768,6 @@ public class BillingFragment extends Fragment {
                 Gravity.CENTER_VERTICAL
         );
 
-
         LinearLayout.LayoutParams rateRowParams =
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
@@ -814,9 +781,6 @@ public class BillingFragment extends Fragment {
                 dp(12)
         );
 
-
-        // RATE INFO
-
         LinearLayout rateInfo =
                 new LinearLayout(
                         requireContext()
@@ -826,14 +790,12 @@ public class BillingFragment extends Fragment {
                 LinearLayout.VERTICAL
         );
 
-
         LinearLayout.LayoutParams rateInfoParams =
                 new LinearLayout.LayoutParams(
                         0,
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         1
                 );
-
 
         TextView rateLabel =
                 new TextView(
@@ -849,7 +811,6 @@ public class BillingFragment extends Fragment {
         rateLabel.setTextColor(
                 TEXT_SECONDARY
         );
-
 
         TextView rateValue =
                 new TextView(
@@ -871,7 +832,6 @@ public class BillingFragment extends Fragment {
                 Typeface.BOLD
         );
 
-
         LinearLayout.LayoutParams rateValueParams =
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -885,7 +845,6 @@ public class BillingFragment extends Fragment {
                 0
         );
 
-
         rateInfo.addView(rateLabel);
 
         rateInfo.addView(
@@ -893,12 +852,10 @@ public class BillingFragment extends Fragment {
                 rateValueParams
         );
 
-
         rateRow.addView(
                 rateInfo,
                 rateInfoParams
         );
-
 
         // -----------------------------------------------------
         // EDIT RATE BUTTON
@@ -940,7 +897,6 @@ public class BillingFragment extends Fragment {
                 0
         );
 
-
         GradientDrawable editBackground =
                 new GradientDrawable();
 
@@ -956,13 +912,11 @@ public class BillingFragment extends Fragment {
                 editBackground
         );
 
-
         LinearLayout.LayoutParams editParams =
                 new LinearLayout.LayoutParams(
                         dp(92),
                         dp(36)
                 );
-
 
         editRateButton.setOnClickListener(
                 v -> {
@@ -974,18 +928,15 @@ public class BillingFragment extends Fragment {
                 }
         );
 
-
         rateRow.addView(
                 editRateButton,
                 editParams
         );
 
-
         card.addView(
                 rateRow,
                 rateRowParams
         );
-
 
         // -----------------------------------------------------
         // DIVIDER
@@ -1000,7 +951,6 @@ public class BillingFragment extends Fragment {
                 Color.rgb(240, 242, 241)
         );
 
-
         LinearLayout.LayoutParams dividerParams =
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
@@ -1014,12 +964,10 @@ public class BillingFragment extends Fragment {
                 dp(12)
         );
 
-
         card.addView(
                 divider,
                 dividerParams
         );
-
 
         // -----------------------------------------------------
         // CALCULATE MONTHLY BILL BUTTON
@@ -1066,7 +1014,6 @@ public class BillingFragment extends Fragment {
                 0
         );
 
-
         GradientDrawable calculateBackground =
                 new GradientDrawable();
 
@@ -1078,11 +1025,9 @@ public class BillingFragment extends Fragment {
                 dp(12)
         );
 
-
         calculateButton.setBackground(
                 calculateBackground
         );
-
 
         LinearLayout.LayoutParams calculateParams =
                 new LinearLayout.LayoutParams(
@@ -1093,11 +1038,8 @@ public class BillingFragment extends Fragment {
         calculateParams.gravity =
                 Gravity.CENTER_HORIZONTAL;
 
-
         final String finalName = name;
-
         final String finalEmail = email;
-
 
         calculateButton.setOnClickListener(
                 v -> {
@@ -1110,13 +1052,977 @@ public class BillingFragment extends Fragment {
                 }
         );
 
-
         card.addView(
                 calculateButton,
                 calculateParams
         );
     }
 
+    // =========================================================
+    // MEMBER TIFFIN CALENDAR POPUP
+    // =========================================================
+
+    private void showMemberTiffinCalendar(
+            String memberId,
+            String memberName) {
+
+        if (!isAdded()) {
+            return;
+        }
+
+        Calendar popupMonth =
+                (Calendar) selectedMonth.clone();
+
+        popupMonth.set(
+                Calendar.DAY_OF_MONTH,
+                1
+        );
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(
+                        requireContext()
+                ).create();
+
+        LinearLayout root =
+                new LinearLayout(
+                        requireContext()
+                );
+
+        root.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
+        root.setPadding(
+                dp(14),
+                dp(12),
+                dp(14),
+                dp(12)
+        );
+
+        // -----------------------------------------------------
+        // TITLE
+        // -----------------------------------------------------
+
+        TextView title =
+                new TextView(
+                        requireContext()
+                );
+
+        title.setText(
+                memberName + " - Tiffin Calendar"
+        );
+
+        title.setTextSize(18);
+
+        title.setTextColor(
+                GREEN
+        );
+
+        title.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+
+        title.setGravity(
+                Gravity.CENTER
+        );
+
+        root.addView(
+                title,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+        );
+
+        // -----------------------------------------------------
+        // MONTH NAVIGATION
+        // -----------------------------------------------------
+
+        LinearLayout monthRow =
+                new LinearLayout(
+                        requireContext()
+                );
+
+        monthRow.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
+
+        monthRow.setGravity(
+                Gravity.CENTER_VERTICAL
+        );
+
+        monthRow.setPadding(
+                0,
+                dp(12),
+                0,
+                dp(5)
+        );
+
+        ImageButton previous =
+                new ImageButton(
+                        requireContext()
+                );
+
+        previous.setImageResource(
+                android.R.drawable.ic_media_previous
+        );
+
+        previous.setBackgroundColor(
+                Color.TRANSPARENT
+        );
+
+        TextView monthText =
+                new TextView(
+                        requireContext()
+                );
+
+        monthText.setTextSize(16);
+
+        monthText.setTextColor(
+                TEXT_PRIMARY
+        );
+
+        monthText.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+
+        monthText.setGravity(
+                Gravity.CENTER
+        );
+
+        ImageButton next =
+                new ImageButton(
+                        requireContext()
+                );
+
+        next.setImageResource(
+                android.R.drawable.ic_media_next
+        );
+
+        next.setBackgroundColor(
+                Color.TRANSPARENT
+        );
+
+        monthRow.addView(
+                previous,
+                new LinearLayout.LayoutParams(
+                        dp(45),
+                        dp(45)
+                )
+        );
+
+        monthRow.addView(
+                monthText,
+                new LinearLayout.LayoutParams(
+                        0,
+                        dp(45),
+                        1
+                )
+        );
+
+        monthRow.addView(
+                next,
+                new LinearLayout.LayoutParams(
+                        dp(45),
+                        dp(45)
+                )
+        );
+
+        root.addView(monthRow);
+
+        // -----------------------------------------------------
+        // CALENDAR CONTAINER
+        // -----------------------------------------------------
+
+        LinearLayout popupCalendar =
+                new LinearLayout(
+                        requireContext()
+                );
+
+        popupCalendar.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
+        root.addView(
+                popupCalendar,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+        );
+
+        // -----------------------------------------------------
+        // LEGEND
+        // -----------------------------------------------------
+
+        LinearLayout legend =
+                new LinearLayout(
+                        requireContext()
+                );
+
+        legend.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
+
+        legend.setGravity(
+                Gravity.CENTER
+        );
+
+        legend.setPadding(
+                0,
+                dp(10),
+                0,
+                dp(5)
+        );
+
+        addLegendItem(
+                legend,
+                FULL_TIFFIN_BG,
+                FULL_TIFFIN_TEXT,
+                "Full"
+        );
+
+        addLegendItem(
+                legend,
+                HALF_TIFFIN_BG,
+                HALF_TIFFIN_TEXT,
+                "Half"
+        );
+
+        addLegendItem(
+                legend,
+                NOT_COLLECTED_BG,
+                NOT_COLLECTED_TEXT,
+                "Not Collected"
+        );
+
+        root.addView(legend);
+
+        // -----------------------------------------------------
+        // CLOSE BUTTON
+        // -----------------------------------------------------
+
+        Button closeButton =
+                new Button(
+                        requireContext()
+                );
+
+        closeButton.setText("Close");
+
+        closeButton.setAllCaps(false);
+
+        closeButton.setTextColor(
+                GREEN
+        );
+
+        closeButton.setOnClickListener(
+                v -> dialog.dismiss()
+        );
+
+        root.addView(
+                closeButton,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(45)
+                )
+        );
+
+        dialog.setView(root);
+
+        // -----------------------------------------------------
+        // LOAD CALENDAR DATA
+        // -----------------------------------------------------
+
+        loadMemberCalendarData(
+                memberId,
+                popupMonth,
+                monthText,
+                popupCalendar
+        );
+
+        previous.setOnClickListener(v -> {
+
+            popupMonth.add(
+                    Calendar.MONTH,
+                    -1
+            );
+
+            loadMemberCalendarData(
+                    memberId,
+                    popupMonth,
+                    monthText,
+                    popupCalendar
+            );
+        });
+
+        next.setOnClickListener(v -> {
+
+            popupMonth.add(
+                    Calendar.MONTH,
+                    1
+            );
+
+            loadMemberCalendarData(
+                    memberId,
+                    popupMonth,
+                    monthText,
+                    popupCalendar
+            );
+        });
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+
+            dialog.getWindow().setLayout(
+                    (int) (
+                            getResources()
+                                    .getDisplayMetrics()
+                                    .widthPixels * 0.94
+                    ),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
+    }
+
+    // =========================================================
+    // LOAD MEMBER CALENDAR DATA
+    // =========================================================
+
+    private void loadMemberCalendarData(
+            String memberId,
+            Calendar month,
+            TextView monthText,
+            LinearLayout calendarContainer) {
+
+        if (!isAdded()) {
+            return;
+        }
+
+        String ownerId = getOwnerId();
+
+        if (ownerId == null || ownerId.isEmpty()) {
+            return;
+        }
+
+        monthText.setText(
+                new SimpleDateFormat(
+                        "MMMM yyyy",
+                        Locale.getDefault()
+                ).format(
+                        month.getTime()
+                )
+        );
+
+        firestore
+                .collection("tiffin_records")
+                .whereEqualTo(
+                        "ownerId",
+                        ownerId
+                )
+                .whereEqualTo(
+                        "memberDocumentId",
+                        memberId
+                )
+                .get()
+                .addOnSuccessListener(
+                        query -> {
+
+                            if (!isAdded()) {
+                                return;
+                            }
+
+                            Map<String, String> tiffinStatus =
+                                    new HashMap<>();
+
+                            for (
+                                    QueryDocumentSnapshot document :
+                                    query
+                            ) {
+
+                                String date =
+                                        document.getString(
+                                                "date"
+                                        );
+
+                                String tiffin =
+                                        document.getString(
+                                                "tiffin"
+                                        );
+
+                                if (
+                                        date == null ||
+                                                date.trim().isEmpty()
+                                ) {
+                                    continue;
+                                }
+
+                                if (tiffin == null) {
+                                    tiffin = "";
+                                }
+
+                                tiffinStatus.put(
+                                        date,
+                                        tiffin
+                                );
+                            }
+
+                            buildMemberPopupCalendar(
+                                    month,
+                                    tiffinStatus,
+                                    calendarContainer
+                            );
+                        }
+                )
+                .addOnFailureListener(
+                        e -> {
+
+                            if (!isAdded()) {
+                                return;
+                            }
+
+                            Toast.makeText(
+                                    requireContext(),
+                                    "Failed to load tiffin records",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            buildMemberPopupCalendar(
+                                    month,
+                                    new HashMap<>(),
+                                    calendarContainer
+                            );
+                        }
+                );
+    }
+
+    // =========================================================
+    // BUILD MEMBER POPUP CALENDAR
+    // =========================================================
+
+    private void buildMemberPopupCalendar(
+            Calendar month,
+            Map<String, String> tiffinStatus,
+            LinearLayout calendarContainer) {
+
+        calendarContainer.removeAllViews();
+
+        // -----------------------------------------------------
+        // DAY HEADER
+        // -----------------------------------------------------
+
+        LinearLayout dayHeader =
+                new LinearLayout(
+                        requireContext()
+                );
+
+        dayHeader.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
+
+        dayHeader.setGravity(
+                Gravity.CENTER
+        );
+
+        String[] days = {
+                "Sun",
+                "Mon",
+                "Tue",
+                "Wed",
+                "Thu",
+                "Fri",
+                "Sat"
+        };
+
+        for (String day : days) {
+
+            TextView dayText =
+                    new TextView(
+                            requireContext()
+                    );
+
+            dayText.setText(day);
+
+            dayText.setTextSize(11);
+
+            dayText.setTextColor(
+                    TEXT_SECONDARY
+            );
+
+            dayText.setTypeface(
+                    Typeface.DEFAULT,
+                    Typeface.BOLD
+            );
+
+            dayText.setGravity(
+                    Gravity.CENTER
+            );
+
+            dayHeader.addView(
+                    dayText,
+                    new LinearLayout.LayoutParams(
+                            0,
+                            dp(30),
+                            1
+                    )
+            );
+        }
+
+        calendarContainer.addView(
+                dayHeader
+        );
+
+        // -----------------------------------------------------
+        // MONTH INFORMATION
+        // -----------------------------------------------------
+
+        Calendar firstDay =
+                (Calendar) month.clone();
+
+        firstDay.set(
+                Calendar.DAY_OF_MONTH,
+                1
+        );
+
+        int firstDayOfWeek =
+                firstDay.get(
+                        Calendar.DAY_OF_WEEK
+                ) - 1;
+
+        int daysInMonth =
+                month.getActualMaximum(
+                        Calendar.DAY_OF_MONTH
+                );
+
+        Calendar previousMonth =
+                (Calendar) month.clone();
+
+        previousMonth.add(
+                Calendar.MONTH,
+                -1
+        );
+
+        int previousMonthDays =
+                previousMonth.getActualMaximum(
+                        Calendar.DAY_OF_MONTH
+                );
+
+        int totalCells =
+                firstDayOfWeek + daysInMonth;
+
+        int rows =
+                (int) Math.ceil(
+                        totalCells / 7.0
+                );
+
+        if (rows < 5) {
+            rows = 5;
+        }
+
+        int currentDay = 1;
+        int nextMonthDay = 1;
+
+        // -----------------------------------------------------
+        // CALENDAR ROWS
+        // -----------------------------------------------------
+
+        for (int row = 0; row < rows; row++) {
+
+            LinearLayout calendarRow =
+                    new LinearLayout(
+                            requireContext()
+                    );
+
+            calendarRow.setOrientation(
+                    LinearLayout.HORIZONTAL
+            );
+
+            calendarRow.setGravity(
+                    Gravity.CENTER
+            );
+
+            for (int column = 0; column < 7; column++) {
+
+                int cell =
+                        row * 7 + column;
+
+                FrameLayoutWithDate dateCell =
+                        new FrameLayoutWithDate(
+                                requireContext()
+                        );
+
+                LinearLayout.LayoutParams cellParams =
+                        new LinearLayout.LayoutParams(
+                                0,
+                                dp(48),
+                                1
+                        );
+
+                if (cell < firstDayOfWeek) {
+
+                    int previousDate =
+                            previousMonthDays
+                                    - firstDayOfWeek
+                                    + cell
+                                    + 1;
+
+                    TextView dateText =
+                            createPopupDateText();
+
+                    dateText.setText(
+                            String.valueOf(previousDate)
+                    );
+
+                    dateText.setTextColor(
+                            Color.rgb(
+                                    190,
+                                    190,
+                                    190
+                            )
+                    );
+
+                    dateCell.addView(
+                            dateText,
+                            new FrameLayout.LayoutParams(
+                                    dp(34),
+                                    dp(34),
+                                    Gravity.CENTER
+                            )
+                    );
+
+                } else if (
+                        currentDay <= daysInMonth
+                ) {
+
+                    int day = currentDay++;
+
+                    TextView dateText =
+                            createPopupDateText();
+
+                    dateText.setText(
+                            String.valueOf(day)
+                    );
+
+                    String dateKey =
+                            new SimpleDateFormat(
+                                    "yyyy-MM-dd",
+                                    Locale.getDefault()
+                            ).format(
+                                    createDate(
+                                            month,
+                                            day
+                                    )
+                            );
+
+                    String status =
+                            tiffinStatus.get(
+                                    dateKey
+                            );
+
+                    applyMemberPopupDateStatus(
+                            dateText,
+                            status
+                    );
+
+                    dateCell.addView(
+                            dateText,
+                            new FrameLayout.LayoutParams(
+                                    dp(34),
+                                    dp(34),
+                                    Gravity.CENTER
+                            )
+                    );
+
+                } else {
+
+                    TextView dateText =
+                            createPopupDateText();
+
+                    dateText.setText(
+                            String.valueOf(
+                                    nextMonthDay++
+                            )
+                    );
+
+                    dateText.setTextColor(
+                            Color.rgb(
+                                    190,
+                                    190,
+                                    190
+                            )
+                    );
+
+                    dateCell.addView(
+                            dateText,
+                            new FrameLayout.LayoutParams(
+                                    dp(34),
+                                    dp(34),
+                                    Gravity.CENTER
+                            )
+                    );
+                }
+
+                calendarRow.addView(
+                        dateCell,
+                        cellParams
+                );
+            }
+
+            calendarContainer.addView(
+                    calendarRow
+            );
+        }
+    }
+
+    // =========================================================
+    // CREATE DATE TEXT
+    // =========================================================
+
+    private TextView createPopupDateText() {
+
+        TextView dateText =
+                new TextView(
+                        requireContext()
+                );
+
+        dateText.setGravity(
+                Gravity.CENTER
+        );
+
+        dateText.setTextSize(12);
+
+        dateText.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+
+        dateText.setTextColor(
+                TEXT_PRIMARY
+        );
+
+        return dateText;
+    }
+
+    // =========================================================
+    // APPLY TIFFIN STATUS COLOR
+    // =========================================================
+
+    private void applyMemberPopupDateStatus(
+            TextView dateText,
+            String status) {
+
+        if (
+                status != null &&
+                        "full".equalsIgnoreCase(
+                                status.trim()
+                        )
+        ) {
+
+            setCalendarCircle(
+                    dateText,
+                    FULL_TIFFIN_BG,
+                    FULL_TIFFIN_TEXT
+            );
+
+        } else if (
+                status != null &&
+                        "half".equalsIgnoreCase(
+                                status.trim()
+                        )
+        ) {
+
+            setCalendarCircle(
+                    dateText,
+                    HALF_TIFFIN_BG,
+                    HALF_TIFFIN_TEXT
+            );
+
+        } else {
+
+            setCalendarCircle(
+                    dateText,
+                    NOT_COLLECTED_BG,
+                    NOT_COLLECTED_TEXT
+            );
+        }
+    }
+
+    // =========================================================
+    // CREATE DATE
+    // =========================================================
+
+    private Date createDate(
+            Calendar month,
+            int day) {
+
+        Calendar calendar =
+                (Calendar) month.clone();
+
+        calendar.set(
+                Calendar.DAY_OF_MONTH,
+                day
+        );
+
+        calendar.set(
+                Calendar.HOUR_OF_DAY,
+                12
+        );
+
+        calendar.set(
+                Calendar.MINUTE,
+                0
+        );
+
+        calendar.set(
+                Calendar.SECOND,
+                0
+        );
+
+        calendar.set(
+                Calendar.MILLISECOND,
+                0
+        );
+
+        return calendar.getTime();
+    }
+
+    // =========================================================
+    // LEGEND ITEM
+    // =========================================================
+
+    private void addLegendItem(
+            LinearLayout parent,
+            int backgroundColor,
+            int textColor,
+            String text) {
+
+        LinearLayout item =
+                new LinearLayout(
+                        requireContext()
+                );
+
+        item.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
+
+        item.setGravity(
+                Gravity.CENTER_VERTICAL
+        );
+
+        item.setPadding(
+                dp(5),
+                0,
+                dp(5),
+                0
+        );
+
+        TextView circle =
+                new TextView(
+                        requireContext()
+                );
+
+        circle.setBackground(
+                createCircleDrawable(
+                        backgroundColor
+                )
+        );
+
+        item.addView(
+                circle,
+                new LinearLayout.LayoutParams(
+                        dp(12),
+                        dp(12)
+                )
+        );
+
+        TextView label =
+                new TextView(
+                        requireContext()
+                );
+
+        label.setText(text);
+
+        label.setTextSize(10);
+
+        label.setTextColor(
+                textColor
+        );
+
+        LinearLayout.LayoutParams labelParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+
+        labelParams.setMargins(
+                dp(4),
+                0,
+                dp(5),
+                0
+        );
+
+        item.addView(
+                label,
+                labelParams
+        );
+
+        parent.addView(item);
+    }
+
+    // =========================================================
+    // CIRCLE DRAWABLE
+    // =========================================================
+
+    private GradientDrawable createCircleDrawable(
+            int color) {
+
+        GradientDrawable drawable =
+                new GradientDrawable();
+
+        drawable.setShape(
+                GradientDrawable.OVAL
+        );
+
+        drawable.setColor(color);
+
+        return drawable;
+    }
+
+    // =========================================================
+    // CALENDAR CIRCLE
+    // =========================================================
+
+    private void setCalendarCircle(
+            TextView textView,
+            int backgroundColor,
+            int textColor) {
+
+        GradientDrawable background =
+                new GradientDrawable();
+
+        background.setShape(
+                GradientDrawable.OVAL
+        );
+
+        background.setColor(
+                backgroundColor
+        );
+
+        textView.setBackground(
+                background
+        );
+
+        textView.setTextColor(
+                textColor
+        );
+
+        textView.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+    }
 
     // =========================================================
     // FORMAT RATE
@@ -1131,7 +2037,6 @@ public class BillingFragment extends Fragment {
         );
     }
 
-
     // =========================================================
     // EDIT MEMBER RATE DIALOG
     // =========================================================
@@ -1144,7 +2049,6 @@ public class BillingFragment extends Fragment {
                 new EditText(
                         requireContext()
                 );
-
 
         input.setInputType(
                 InputType.TYPE_CLASS_NUMBER
@@ -1165,7 +2069,6 @@ public class BillingFragment extends Fragment {
                 dp(10)
         );
 
-
         firestore
                 .collection("members")
                 .document(memberId)
@@ -1177,7 +2080,6 @@ public class BillingFragment extends Fragment {
                                     documentSnapshot.getDouble(
                                             "tiffinRate"
                                     );
-
 
                             if (currentRate != null) {
 
@@ -1191,7 +2093,6 @@ public class BillingFragment extends Fragment {
                                         input.length()
                                 );
                             }
-
 
                             AlertDialog dialog =
                                     new AlertDialog.Builder(
@@ -1214,7 +2115,6 @@ public class BillingFragment extends Fragment {
                                             )
                                             .create();
 
-
                             dialog.setOnShowListener(
                                     d -> {
 
@@ -1229,7 +2129,6 @@ public class BillingFragment extends Fragment {
                                                                             .toString()
                                                                             .trim();
 
-
                                                             if (value.isEmpty()) {
 
                                                                 input.setError(
@@ -1239,9 +2138,7 @@ public class BillingFragment extends Fragment {
                                                                 return;
                                                             }
 
-
                                                             double newRate;
-
 
                                                             try {
 
@@ -1259,7 +2156,6 @@ public class BillingFragment extends Fragment {
                                                                 return;
                                                             }
 
-
                                                             if (newRate <= 0) {
 
                                                                 input.setError(
@@ -1268,7 +2164,6 @@ public class BillingFragment extends Fragment {
 
                                                                 return;
                                                             }
-
 
                                                             saveMemberRate(
                                                                     memberId,
@@ -1280,7 +2175,6 @@ public class BillingFragment extends Fragment {
                                                 );
                                     }
                             );
-
 
                             dialog.show();
                         }
@@ -1296,7 +2190,6 @@ public class BillingFragment extends Fragment {
                         }
                 );
     }
-
 
     // =========================================================
     // SAVE MEMBER RATE
@@ -1316,7 +2209,6 @@ public class BillingFragment extends Fragment {
                 newRate
         );
 
-
         firestore
                 .collection("members")
                 .document(memberId)
@@ -1331,13 +2223,11 @@ public class BillingFragment extends Fragment {
                                     formatRate(newRate)
                             );
 
-
                             Toast.makeText(
                                     requireContext(),
                                     "Tiffin rate updated",
                                     Toast.LENGTH_SHORT
                             ).show();
-
 
                             dialog.dismiss();
                         }
@@ -1355,7 +2245,6 @@ public class BillingFragment extends Fragment {
                 );
     }
 
-
     // =========================================================
     // CALCULATE MONTHLY BILL
     // =========================================================
@@ -1367,7 +2256,6 @@ public class BillingFragment extends Fragment {
 
         String ownerId = getOwnerId();
 
-
         if (ownerId == null || ownerId.isEmpty()) {
 
             Toast.makeText(
@@ -1378,7 +2266,6 @@ public class BillingFragment extends Fragment {
 
             return;
         }
-
 
         firestore
                 .collection("members")
@@ -1392,7 +2279,6 @@ public class BillingFragment extends Fragment {
                                             "tiffinRate"
                                     );
 
-
                             if (
                                     memberRate == null ||
                                             memberRate <= 0
@@ -1401,7 +2287,6 @@ public class BillingFragment extends Fragment {
                                 memberRate =
                                         defaultTiffinRate;
                             }
-
 
                             calculateBillFromRecords(
                                     ownerId,
@@ -1425,7 +2310,6 @@ public class BillingFragment extends Fragment {
                 );
     }
 
-
     // =========================================================
     // CALCULATE FROM TIFFIN RECORDS
     // =========================================================
@@ -1437,10 +2321,8 @@ public class BillingFragment extends Fragment {
             String email,
             double memberRate) {
 
-
         Calendar start =
                 (Calendar) selectedMonth.clone();
-
 
         start.set(
                 Calendar.DAY_OF_MONTH,
@@ -1467,7 +2349,6 @@ public class BillingFragment extends Fragment {
                 0
         );
 
-
         Calendar end =
                 (Calendar) start.clone();
 
@@ -1475,21 +2356,6 @@ public class BillingFragment extends Fragment {
                 Calendar.MONTH,
                 1
         );
-
-
-        /*
-         * IMPORTANT:
-         *
-         * Your TiffinFragment stores records in:
-         *
-         * tiffin_records
-         *
-         * and stores the date as:
-         *
-         * yyyy-MM-dd
-         *
-         * Therefore we read that collection here.
-         */
 
         firestore
                 .collection("tiffin_records")
@@ -1513,7 +2379,6 @@ public class BillingFragment extends Fragment {
 
                             int halfTiffins = 0;
 
-
                             for (
                                     QueryDocumentSnapshot document :
                                     query
@@ -1524,7 +2389,6 @@ public class BillingFragment extends Fragment {
                                                 "date"
                                         );
 
-
                                 if (
                                         dateString == null ||
                                                 dateString.trim().isEmpty()
@@ -1532,7 +2396,6 @@ public class BillingFragment extends Fragment {
 
                                     continue;
                                 }
-
 
                                 Date recordDate;
 
@@ -1551,11 +2414,9 @@ public class BillingFragment extends Fragment {
                                     continue;
                                 }
 
-
                                 if (recordDate == null) {
                                     continue;
                                 }
-
 
                                 Calendar recordCalendar =
                                         Calendar.getInstance();
@@ -1563,15 +2424,6 @@ public class BillingFragment extends Fragment {
                                 recordCalendar.setTime(
                                         recordDate
                                 );
-
-
-                                /*
-                                 * Compare year + month directly.
-                                 *
-                                 * This is safer because your
-                                 * tiffin_records date is stored
-                                 * as a String.
-                                 */
 
                                 boolean sameMonth =
                                         recordCalendar.get(
@@ -1588,17 +2440,14 @@ public class BillingFragment extends Fragment {
                                                                 Calendar.MONTH
                                                         );
 
-
                                 if (!sameMonth) {
                                     continue;
                                 }
-
 
                                 String tiffin =
                                         document.getString(
                                                 "tiffin"
                                         );
-
 
                                 if ("full".equalsIgnoreCase(tiffin)) {
 
@@ -1620,10 +2469,8 @@ public class BillingFragment extends Fragment {
                                 }
                             }
 
-
                             double totalAmount =
                                     totalTiffins * memberRate;
-
 
                             showBillDialog(
                                     memberName,
@@ -1650,7 +2497,6 @@ public class BillingFragment extends Fragment {
                 );
     }
 
-
     // =========================================================
     // BILL DIALOG
     // =========================================================
@@ -1665,7 +2511,6 @@ public class BillingFragment extends Fragment {
             double memberRate,
             double totalAmount) {
 
-
         String month =
                 new SimpleDateFormat(
                         "MMMM yyyy",
@@ -1673,7 +2518,6 @@ public class BillingFragment extends Fragment {
                 ).format(
                         selectedMonth.getTime()
                 );
-
 
         String message =
                 "Member: "
@@ -1712,10 +2556,8 @@ public class BillingFragment extends Fragment {
                         totalAmount
                 );
 
-
         final double finalMemberRate =
                 memberRate;
-
 
         new AlertDialog.Builder(
                 requireContext()
@@ -1748,7 +2590,6 @@ public class BillingFragment extends Fragment {
                 .show();
     }
 
-
     // =========================================================
     // GENERATE PDF
     // =========================================================
@@ -1762,10 +2603,8 @@ public class BillingFragment extends Fragment {
             double memberRate,
             double totalAmount) {
 
-
         PdfDocument pdfDocument =
                 new PdfDocument();
-
 
         PdfDocument.PageInfo pageInfo =
                 new PdfDocument.PageInfo.Builder(
@@ -1774,20 +2613,16 @@ public class BillingFragment extends Fragment {
                         1
                 ).create();
 
-
         PdfDocument.Page page =
                 pdfDocument.startPage(
                         pageInfo
                 );
 
-
         android.graphics.Canvas canvas =
                 page.getCanvas();
 
-
         android.graphics.Paint paint =
                 new android.graphics.Paint();
-
 
         paint.setColor(Color.BLACK);
 
@@ -1797,7 +2632,6 @@ public class BillingFragment extends Fragment {
                 Typeface.DEFAULT_BOLD
         );
 
-
         canvas.drawText(
                 "MESSMATE",
                 50,
@@ -1805,9 +2639,7 @@ public class BillingFragment extends Fragment {
                 paint
         );
 
-
         paint.setTextSize(20);
-
 
         canvas.drawText(
                 "Monthly Tiffin Bill",
@@ -1816,16 +2648,13 @@ public class BillingFragment extends Fragment {
                 paint
         );
 
-
         paint.setTypeface(
                 Typeface.DEFAULT
         );
 
         paint.setTextSize(15);
 
-
         int y = 150;
-
 
         canvas.drawText(
                 "Member: " + memberName,
@@ -1834,9 +2663,7 @@ public class BillingFragment extends Fragment {
                 paint
         );
 
-
         y += 30;
-
 
         if (
                 email != null &&
@@ -1853,7 +2680,6 @@ public class BillingFragment extends Fragment {
             y += 30;
         }
 
-
         canvas.drawText(
                 "Billing Month: " + month,
                 50,
@@ -1861,9 +2687,7 @@ public class BillingFragment extends Fragment {
                 paint
         );
 
-
         y += 50;
-
 
         canvas.drawText(
                 "Tiffin Rate:",
@@ -1871,7 +2695,6 @@ public class BillingFragment extends Fragment {
                 y,
                 paint
         );
-
 
         canvas.drawText(
                 "₹ "
@@ -1885,9 +2708,7 @@ public class BillingFragment extends Fragment {
                 paint
         );
 
-
         y += 35;
-
 
         canvas.drawText(
                 "Collected Days:",
@@ -1896,7 +2717,6 @@ public class BillingFragment extends Fragment {
                 paint
         );
 
-
         canvas.drawText(
                 String.valueOf(totalDays),
                 400,
@@ -1904,9 +2724,7 @@ public class BillingFragment extends Fragment {
                 paint
         );
 
-
         y += 35;
-
 
         canvas.drawText(
                 "Tiffin Quantity:",
@@ -1914,7 +2732,6 @@ public class BillingFragment extends Fragment {
                 y,
                 paint
         );
-
 
         canvas.drawText(
                 String.format(
@@ -1927,16 +2744,13 @@ public class BillingFragment extends Fragment {
                 paint
         );
 
-
         y += 60;
-
 
         paint.setTypeface(
                 Typeface.DEFAULT_BOLD
         );
 
         paint.setTextSize(20);
-
 
         canvas.drawText(
                 "TOTAL: ₹ "
@@ -1950,13 +2764,11 @@ public class BillingFragment extends Fragment {
                 paint
         );
 
-
         paint.setTypeface(
                 Typeface.DEFAULT
         );
 
         paint.setTextSize(12);
-
 
         canvas.drawText(
                 "Generated by MessMate",
@@ -1965,9 +2777,7 @@ public class BillingFragment extends Fragment {
                 paint
         );
 
-
         pdfDocument.finishPage(page);
-
 
         String safeName =
                 memberName.replace(
@@ -1975,13 +2785,11 @@ public class BillingFragment extends Fragment {
                         "_"
                 );
 
-
         String safeMonth =
                 month.replace(
                         " ",
                         "_"
                 );
-
 
         String fileName =
                 "MessMate_Bill_"
@@ -1990,73 +2798,87 @@ public class BillingFragment extends Fragment {
                         + safeMonth
                         + ".pdf";
 
-
         try {
 
-            ContentValues values =
-                    new ContentValues();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
+                ContentValues values =
+                        new ContentValues();
 
-            values.put(
-                    MediaStore.Downloads.DISPLAY_NAME,
-                    fileName
-            );
-
-
-            values.put(
-                    MediaStore.Downloads.MIME_TYPE,
-                    "application/pdf"
-            );
-
-
-            values.put(
-                    MediaStore.Downloads.RELATIVE_PATH,
-                    Environment.DIRECTORY_DOWNLOADS
-            );
-
-
-            android.net.Uri uri =
-                    requireContext()
-                            .getContentResolver()
-                            .insert(
-                                    MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                                    values
-                            );
-
-
-            if (uri == null) {
-
-                Toast.makeText(
-                        requireContext(),
-                        "Could not create PDF",
-                        Toast.LENGTH_LONG
-                ).show();
-
-
-                pdfDocument.close();
-
-                return;
-            }
-
-
-            OutputStream outputStream =
-                    requireContext()
-                            .getContentResolver()
-                            .openOutputStream(uri);
-
-
-            if (outputStream != null) {
-
-                pdfDocument.writeTo(
-                        outputStream
+                values.put(
+                        MediaStore.Downloads.DISPLAY_NAME,
+                        fileName
                 );
+
+                values.put(
+                        MediaStore.Downloads.MIME_TYPE,
+                        "application/pdf"
+                );
+
+                values.put(
+                        MediaStore.Downloads.RELATIVE_PATH,
+                        Environment.DIRECTORY_DOWNLOADS
+                );
+
+                android.net.Uri uri =
+                        requireContext()
+                                .getContentResolver()
+                                .insert(
+                                        MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                                        values
+                                );
+
+                if (uri == null) {
+
+                    Toast.makeText(
+                            requireContext(),
+                            "Could not create PDF",
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                    pdfDocument.close();
+
+                    return;
+                }
+
+                OutputStream outputStream =
+                        requireContext()
+                                .getContentResolver()
+                                .openOutputStream(uri);
+
+                if (outputStream != null) {
+
+                    pdfDocument.writeTo(outputStream);
+
+                    outputStream.close();
+                }
+
+            } else {
+
+                File downloadsDirectory =
+                        Environment.getExternalStoragePublicDirectory(
+                                Environment.DIRECTORY_DOWNLOADS
+                        );
+
+                if (!downloadsDirectory.exists()) {
+                    downloadsDirectory.mkdirs();
+                }
+
+                File pdfFile =
+                        new File(
+                                downloadsDirectory,
+                                fileName
+                        );
+
+                OutputStream outputStream =
+                        new FileOutputStream(pdfFile);
+
+                pdfDocument.writeTo(outputStream);
 
                 outputStream.close();
             }
 
-
             pdfDocument.close();
-
 
             Toast.makeText(
                     requireContext(),
@@ -2064,11 +2886,9 @@ public class BillingFragment extends Fragment {
                     Toast.LENGTH_LONG
             ).show();
 
-
         } catch (Exception e) {
 
             pdfDocument.close();
-
 
             Toast.makeText(
                     requireContext(),
@@ -2076,6 +2896,24 @@ public class BillingFragment extends Fragment {
                             + e.getMessage(),
                     Toast.LENGTH_LONG
             ).show();
+        }
+    }
+
+    // =========================================================
+    // SIMPLE FRAME LAYOUT FOR CALENDAR CELLS
+    // =========================================================
+
+    private static class FrameLayoutWithDate
+            extends android.widget.FrameLayout {
+
+        public FrameLayoutWithDate(
+                @NonNull android.content.Context context) {
+
+            super(context);
+
+            setForegroundGravity(
+                    Gravity.CENTER
+            );
         }
     }
 }
