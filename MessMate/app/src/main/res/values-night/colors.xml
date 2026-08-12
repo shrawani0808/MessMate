@@ -1,7 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Brand Colors -->
+    <!-- Existing project colors -->
+    <color name="primary">#2E7D5B</color>
+    <color name="primaryDark">#205A42</color>
+    <color name="primaryLight">#E8F5EF</color>
+
+    <color name="secondary">#FFB74D</color>
+
+    <color name="background">#F8FAF9</color>
+    <color name="surface">#FFFFFF</color>
+
+    <color name="textPrimary">#1B1F1D</color>
+    <color name="textSecondary">#6B746F</color>
+
+    <color name="green">#4CAF50</color>
+    <color name="red">#F44336</color>
+    <color name="yellow">#FFB300</color>
+
+    <!-- Brand colors used by Theme.MessMate -->
     <color name="primary_green">#2E7D5B</color>
     <color name="primary_green_dark">#205A42</color>
     <color name="primary_green_light">#E8F5EF</color>

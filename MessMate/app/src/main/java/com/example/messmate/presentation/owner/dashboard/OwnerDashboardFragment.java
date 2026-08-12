@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.messmate.R;
@@ -85,8 +87,9 @@ public class OwnerDashboardFragment extends Fragment {
         }
 
         txtProfileInitial.setOnClickListener(v -> {
-            NavHostFragment.findNavController(OwnerDashboardFragment.this)
-                    .navigate(R.id.ownerProfileFragment);
+
+            NavController navController = Navigation.findNavController(v);
+            navController.navigate(R.id.ownerProfileFragment);
         });
     }
 
@@ -341,13 +344,18 @@ public class OwnerDashboardFragment extends Fragment {
 
     @Override
     public void onResume() {
-
         super.onResume();
+
+        if (sessionManager == null) {
+            sessionManager = new SessionManager(requireContext());
+        }
+
+        ownerId = sessionManager.getUid();
 
         if (ownerId != null && !ownerId.isEmpty()) {
 
+            loadOwnerProfile();
             loadMemberCount();
-
             loadTodayCollection();
         }
     }

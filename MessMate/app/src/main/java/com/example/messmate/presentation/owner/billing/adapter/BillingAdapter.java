@@ -16,24 +16,18 @@ import com.google.android.material.button.MaterialButton;
 import java.util.List;
 import java.util.Locale;
 
-public class BillingAdapter
-        extends RecyclerView.Adapter<BillingAdapter.BillingViewHolder> {
+public class BillingAdapter extends RecyclerView.Adapter<BillingAdapter.BillingViewHolder> {
 
     public interface OnGenerateBillListener {
-        void onGenerateBill(
-                BillingData data
-        );
+        void onGenerateBill(BillingData data);
     }
-
 
     private final List<BillingData> billingList;
 
     private final OnGenerateBillListener listener;
 
 
-    public BillingAdapter(
-            List<BillingData> billingList,
-            OnGenerateBillListener listener) {
+    public BillingAdapter(List<BillingData> billingList, OnGenerateBillListener listener) {
 
         this.billingList = billingList;
         this.listener = listener;
@@ -42,49 +36,29 @@ public class BillingAdapter
 
     @NonNull
     @Override
-    public BillingViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType) {
+    public BillingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        View view =
-                LayoutInflater.from(parent.getContext())
-                        .inflate(
-                                R.layout.item_billing,
-                                parent,
-                                false
-                        );
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_billing, parent, false);
 
         return new BillingViewHolder(view);
     }
 
 
     @Override
-    public void onBindViewHolder(
-            @NonNull BillingViewHolder holder,
-            int position) {
+    public void onBindViewHolder(@NonNull BillingViewHolder holder, int position) {
 
-        BillingData data =
-                billingList.get(position);
+        BillingData data = billingList.get(position);
 
 
-        holder.txtMemberName.setText(
-                data.memberName
-        );
+        holder.txtMemberName.setText(data.memberName);
 
 
-        holder.txtMemberEmail.setText(
-                data.email
-        );
+        holder.txtMemberEmail.setText(data.email);
 
 
-        if (data.memberName != null &&
-                !data.memberName.trim().isEmpty()) {
+        if (data.memberName != null && !data.memberName.trim().isEmpty()) {
 
-            holder.txtInitial.setText(
-                    data.memberName
-                            .substring(0, 1)
-                            .toUpperCase()
-            );
+            holder.txtInitial.setText(data.memberName.substring(0, 1).toUpperCase());
 
         } else {
 
@@ -92,41 +66,19 @@ public class BillingAdapter
         }
 
 
-        holder.txtFullTiffins.setText(
-                String.valueOf(
-                        data.fullTiffins
-                )
-        );
+        holder.txtFullTiffins.setText(String.valueOf(data.fullTiffins));
 
 
-        holder.txtHalfTiffins.setText(
-                String.valueOf(
-                        data.halfTiffins
-                )
-        );
+        holder.txtHalfTiffins.setText(String.valueOf(data.halfTiffins));
 
 
-        holder.txtTotalUnits.setText(
-                String.format(
-                        Locale.getDefault(),
-                        "%.1f",
-                        data.totalUnits
-                )
-        );
+        holder.txtTotalUnits.setText(String.format(Locale.getDefault(), "%.1f", data.totalUnits));
 
 
-        holder.txtTotalAmount.setText(
-                String.format(
-                        Locale.getDefault(),
-                        "₹ %.2f",
-                        data.totalAmount
-                )
-        );
+        holder.txtTotalAmount.setText(String.format(Locale.getDefault(), "₹ %.2f", data.totalAmount));
 
 
-        holder.btnGenerateBill.setOnClickListener(
-                v -> listener.onGenerateBill(data)
-        );
+        holder.btnGenerateBill.setOnClickListener(v -> listener.onGenerateBill(data));
     }
 
 
@@ -137,8 +89,7 @@ public class BillingAdapter
     }
 
 
-    static class BillingViewHolder
-            extends RecyclerView.ViewHolder {
+    static class BillingViewHolder extends RecyclerView.ViewHolder {
 
         TextView txtInitial;
         TextView txtMemberName;
@@ -152,58 +103,33 @@ public class BillingAdapter
         MaterialButton btnGenerateBill;
 
 
-        BillingViewHolder(
-                @NonNull View itemView) {
+        BillingViewHolder(@NonNull View itemView) {
 
             super(itemView);
 
 
-            txtInitial =
-                    itemView.findViewById(
-                            R.id.txtInitial
-                    );
+            txtInitial = itemView.findViewById(R.id.txtInitial);
 
 
-            txtMemberName =
-                    itemView.findViewById(
-                            R.id.txtMemberName
-                    );
+            txtMemberName = itemView.findViewById(R.id.txtMemberName);
 
 
-            txtMemberEmail =
-                    itemView.findViewById(
-                            R.id.txtMemberEmail
-                    );
+            txtMemberEmail = itemView.findViewById(R.id.txtMemberEmail);
 
 
-            txtFullTiffins =
-                    itemView.findViewById(
-                            R.id.txtFullTiffins
-                    );
+            txtFullTiffins = itemView.findViewById(R.id.txtFullTiffins);
 
 
-            txtHalfTiffins =
-                    itemView.findViewById(
-                            R.id.txtHalfTiffins
-                    );
+            txtHalfTiffins = itemView.findViewById(R.id.txtHalfTiffins);
 
 
-            txtTotalUnits =
-                    itemView.findViewById(
-                            R.id.txtTotalUnits
-                    );
+            txtTotalUnits = itemView.findViewById(R.id.txtTotalUnits);
 
 
-            txtTotalAmount =
-                    itemView.findViewById(
-                            R.id.txtTotalAmount
-                    );
+            txtTotalAmount = itemView.findViewById(R.id.txtTotalAmount);
 
 
-            btnGenerateBill =
-                    itemView.findViewById(
-                            R.id.btnGenerateBill
-                    );
+            btnGenerateBill = itemView.findViewById(R.id.btnGenerateBill);
         }
     }
 }

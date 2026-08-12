@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="28dp"
+    android:paddingTop="28dp"
+    android:paddingEnd="28dp"
+    android:paddingBottom="26dp"
+    android:background="@drawable/bg_dialog_white">
+
+    <!-- ========================= -->
+    <!-- TITLE -->
+    <!-- ========================= -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            app:cardBackgroundColor="#EAF7F0"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="0dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="₹"
+                android:textColor="@color/primary_green"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit Tiffin Rate"
+                android:textColor="#202020"
+                android:textSize="23sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:text="Set the rate for this member"
+                android:textColor="#68716C"
+                android:textSize="15sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <!-- ========================= -->
+    <!-- RATE LABEL -->
+    <!-- ========================= -->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:text="Rate (per tiffin)"
+        android:textColor="@color/primary_green"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+
+    <!-- ========================= -->
+    <!-- RATE INPUT -->
+    <!-- ========================= -->
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:layout_marginTop="3dp"
+        app:cardBackgroundColor="#F4F9F6"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/primary_green"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="₹"
+                android:textColor="@color/primary_green"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/edtTiffinRate"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:inputType="numberDecimal"
+                android:maxLines="1"
+                android:padding="0dp"
+                android:text="50.00"
+                android:textColor="#202020"
+                android:textCursorDrawable="@null"
+                android:textSize="22sp" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+
+    <!-- ========================= -->
+    <!-- DIVIDER -->
+    <!-- ========================= -->
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="26dp"
+        android:layout_marginBottom="26dp"
+        android:background="#E5E9E7" />
+
+
+    <!-- ========================= -->
+    <!-- BUTTONS -->
+    <!-- ========================= -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelRate"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="18dp"
+            android:layout_weight="1"
+            android:text="Cancel"
+            android:textAllCaps="false"
+            android:textColor="@color/primary_green"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@android:color/transparent"
+            app:cornerRadius="16dp"
+            app:strokeColor="@color/primary_green"
+            app:strokeWidth="1dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSaveRate"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Save"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/primary_green"
+            app:cornerRadius="16dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

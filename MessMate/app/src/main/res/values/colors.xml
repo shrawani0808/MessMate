@@ -1,28 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Brand -->
+    <!-- Existing project colors -->
     <color name="primary">#2E7D5B</color>
-    <color name="primaryDark">#215E44</color>
-    <color name="primaryLight">#E9F7F0</color>
+    <color name="primaryDark">#205A42</color>
+    <color name="primaryLight">#E8F5EF</color>
 
-    <!-- Secondary -->
     <color name="secondary">#FFB74D</color>
 
-    <!-- Background -->
-    <color name="background">#F6F8FA</color>
+    <color name="background">#F8FAF9</color>
     <color name="surface">#FFFFFF</color>
 
-    <!-- Text -->
-    <color name="textPrimary">#1C1C1C</color>
-    <color name="textSecondary">#7B7B7B</color>
+    <color name="textPrimary">#1B1F1D</color>
+    <color name="textSecondary">#6B746F</color>
 
-    <!-- Status -->
     <color name="green">#4CAF50</color>
     <color name="red">#F44336</color>
     <color name="yellow">#FFB300</color>
 
-    <!-- Divider -->
-    <color name="divider">#ECECEC</color>
+    <!-- Brand colors used by Theme.MessMate -->
+    <color name="primary_green">#2E7D5B</color>
+    <color name="primary_green_dark">#205A42</color>
+    <color name="primary_green_light">#E8F5EF</color>
+
+    <!-- Background -->
+    <color name="background_light">#F8FAF9</color>
+    <color name="surface_white">#FFFFFF</color>
+
+    <!-- Text -->
+    <color name="text_primary">#1B1F1D</color>
+    <color name="text_secondary">#6B746F</color>
+
+    <!-- Borders -->
+    <color name="divider">#E3E8E5</color>
+
+    <!-- Status -->
+    <color name="status_collected">#2E9B68</color>
+    <color name="status_half">#E3A72F</color>
+    <color name="status_not_collected">#D9534F</color>
+    <color name="status_pending">#8A9290</color>
 
 </resources>
