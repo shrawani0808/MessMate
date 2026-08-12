@@ -2,7 +2,6 @@ package com.example.messmate.presentation.owner.members;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,7 +24,6 @@ import com.example.messmate.presentation.owner.members.model.Member;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,13 +38,24 @@ public class MemberListFragment extends Fragment {
 
     private FloatingActionButton fabAddMember;
 
+    // =====================================================
+    // SEARCH
+    // =====================================================
+
+    private SearchView searchViewMembers;
+
     private FirebaseFirestore firestore;
 
     private SessionManager sessionManager;
 
     private String ownerId;
 
+    // Original complete list loaded from Firestore
     private final List<Member> memberList =
+            new ArrayList<>();
+
+    // List currently displayed by RecyclerView
+    private final List<Member> filteredMemberList =
             new ArrayList<>();
 
     private MemberAdapter adapter;
@@ -87,9 +97,13 @@ public class MemberListFragment extends Fragment {
 
         setupRecyclerView();
 
+        setupSearch();
+
+
         fabAddMember.setOnClickListener(
                 v -> showAddMemberDialog()
         );
+
 
         if (ownerId != null &&
                 !ownerId.isEmpty()) {
@@ -103,8 +117,6 @@ public class MemberListFragment extends Fragment {
             );
         }
     }
-
-
 
 
     // =====================================================
@@ -132,6 +144,12 @@ public class MemberListFragment extends Fragment {
                 view.findViewById(
                         R.id.fabAddMember
                 );
+
+        // Search bar
+        searchViewMembers =
+                view.findViewById(
+                        R.id.searchViewMembers
+                );
     }
 
 
@@ -150,12 +168,104 @@ public class MemberListFragment extends Fragment {
 
         adapter =
                 new MemberAdapter(
-                        memberList,
+                        filteredMemberList,
                         this::confirmDeleteMember
                 );
 
 
         recyclerMembers.setAdapter(adapter);
+    }
+
+
+    // =====================================================
+    // SEARCH
+    // =====================================================
+
+    private void setupSearch() {
+
+        searchViewMembers.setOnQueryTextListener(
+                new SearchView.OnQueryTextListener() {
+
+                    @Override
+                    public boolean onQueryTextSubmit(
+                            String query) {
+
+                        filterMembers(query);
+
+                        return true;
+                    }
+
+
+                    @Override
+                    public boolean onQueryTextChange(
+                            String newText) {
+
+                        filterMembers(newText);
+
+                        return true;
+                    }
+                }
+        );
+    }
+
+
+    // =====================================================
+    // FILTER MEMBERS
+    // =====================================================
+
+    private void filterMembers(String query) {
+
+        String searchText =
+                query == null
+                        ? ""
+                        : query.trim().toLowerCase();
+
+
+        filteredMemberList.clear();
+
+
+        // If search is empty, show everyone
+        if (searchText.isEmpty()) {
+
+            filteredMemberList.addAll(
+                    memberList
+            );
+
+        } else {
+
+            for (Member member : memberList) {
+
+                String name =
+                        member.getName() == null
+                                ? ""
+                                : member.getName().toLowerCase();
+
+                String email =
+                        member.getEmail() == null
+                                ? ""
+                                : member.getEmail().toLowerCase();
+
+                String phone =
+                        member.getPhone() == null
+                                ? ""
+                                : member.getPhone().toLowerCase();
+
+
+                if (name.contains(searchText)
+                        || email.contains(searchText)
+                        || phone.contains(searchText)) {
+
+                    filteredMemberList.add(member);
+                }
+            }
+        }
+
+
+        adapter.notifyDataSetChanged();
+
+        updateMemberCount();
+
+        updateEmptyState();
     }
 
 
@@ -196,11 +306,15 @@ public class MemberListFragment extends Fragment {
                             }
 
 
-                            adapter.notifyDataSetChanged();
+                            // Re-apply current search
+                            String currentSearch =
+                                    searchViewMembers
+                                            .getQuery()
+                                            .toString();
 
-                            updateMemberCount();
-
-                            updateEmptyState();
+                            filterMembers(
+                                    currentSearch
+                            );
                         }
                 )
 
@@ -218,25 +332,42 @@ public class MemberListFragment extends Fragment {
 
     private void showAddMemberDialog() {
 
-        View dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.dialog_add_member, null);
+        View dialogView =
+                LayoutInflater.from(requireContext())
+                        .inflate(
+                                R.layout.dialog_add_member,
+                                null
+                        );
+
 
         EditText nameInput =
-                dialogView.findViewById(R.id.etMemberName);
+                dialogView.findViewById(
+                        R.id.etMemberName
+                );
 
         EditText emailInput =
-                dialogView.findViewById(R.id.etMemberEmail);
+                dialogView.findViewById(
+                        R.id.etMemberEmail
+                );
 
         EditText phoneInput =
-                dialogView.findViewById(R.id.etMemberPhone);
+                dialogView.findViewById(
+                        R.id.etMemberPhone
+                );
+
 
         com.google.android.material.button.MaterialButton
                 btnCancel =
-                dialogView.findViewById(R.id.btnCancelMember);
+                dialogView.findViewById(
+                        R.id.btnCancelMember
+                );
+
 
         com.google.android.material.button.MaterialButton
                 btnAdd =
-                dialogView.findViewById(R.id.btnAddMember);
+                dialogView.findViewById(
+                        R.id.btnAddMember
+                );
 
 
         AlertDialog dialog =
@@ -249,14 +380,15 @@ public class MemberListFragment extends Fragment {
 
             if (dialog.getWindow() != null) {
 
-                dialog.getWindow().setBackgroundDrawableResource(
-                        android.R.color.transparent
-                );
+                dialog.getWindow()
+                        .setBackgroundDrawableResource(
+                                android.R.color.transparent
+                        );
             }
 
 
-            btnCancel.setOnClickListener(v ->
-                    dialog.dismiss()
+            btnCancel.setOnClickListener(
+                    v -> dialog.dismiss()
             );
 
 
@@ -332,9 +464,12 @@ public class MemberListFragment extends Fragment {
         if (dialog.getWindow() != null) {
 
             dialog.getWindow().setLayout(
-                    (int) (350 * getResources()
-                            .getDisplayMetrics()
-                            .density),
+                    (int) (
+                            350 *
+                                    getResources()
+                                            .getDisplayMetrics()
+                                            .density
+                    ),
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
         }
@@ -359,19 +494,21 @@ public class MemberListFragment extends Fragment {
                         phone
                 );
 
+
         firestore
                 .collection("members")
                 .add(member)
 
-                .addOnSuccessListener(documentReference -> {
+                .addOnSuccessListener(
+                        documentReference -> {
 
-                    showToast(
-                            "Member added successfully"
-                    );
+                            showToast(
+                                    "Member added successfully"
+                            );
 
-                    loadMembers();
-
-                })
+                            loadMembers();
+                        }
+                )
 
                 .addOnFailureListener(e -> {
 
@@ -381,6 +518,7 @@ public class MemberListFragment extends Fragment {
                     );
                 });
     }
+
 
     // =====================================================
     // DELETE CONFIRMATION
@@ -465,7 +603,8 @@ public class MemberListFragment extends Fragment {
     private void updateMemberCount() {
 
         int count =
-                memberList.size();
+                filteredMemberList.size();
+
 
         if (count == 1) {
 
@@ -488,7 +627,7 @@ public class MemberListFragment extends Fragment {
 
     private void updateEmptyState() {
 
-        if (memberList.isEmpty()) {
+        if (filteredMemberList.isEmpty()) {
 
             emptyLayout.setVisibility(
                     View.VISIBLE

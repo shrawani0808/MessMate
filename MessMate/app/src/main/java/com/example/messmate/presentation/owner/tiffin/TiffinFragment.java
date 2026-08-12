@@ -1,9 +1,12 @@
 package com.example.messmate.presentation.owner.tiffin;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,6 +44,9 @@ public class TiffinFragment extends Fragment {
     private TextView txtHalfCount;
     private TextView txtNotCollectedCount;
 
+    // Search bar
+    private EditText etSearchTiffin;
+
     private FirebaseFirestore firestore;
 
     private SessionManager sessionManager;
@@ -49,7 +55,12 @@ public class TiffinFragment extends Fragment {
 
     private String todayDate;
 
+    // This is the list currently displayed by RecyclerView
     private final List<Member> memberList =
+            new ArrayList<>();
+
+    // This keeps the complete list for searching
+    private final List<Member> allMembers =
             new ArrayList<>();
 
     private TiffinAdapter adapter;
@@ -84,25 +95,44 @@ public class TiffinFragment extends Fragment {
         initializeViews(view);
 
         firestore = FirebaseFirestore.getInstance();
-        sessionManager = new SessionManager(requireContext());
-        ownerId = sessionManager.getUid();
 
-        todayDate = new SimpleDateFormat("yyyy-MM-dd",
-                Locale.getDefault()).format(new Date());
+        sessionManager =
+                new SessionManager(requireContext());
 
-        txtTodayDate.setText(new SimpleDateFormat(
-                "EEEE, dd MMMM yyyy",
-                        Locale.getDefault()).format(new Date()));
+        ownerId =
+                sessionManager.getUid();
+
+
+        todayDate =
+                new SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.getDefault()
+                ).format(new Date());
+
+
+        txtTodayDate.setText(
+                new SimpleDateFormat(
+                        "EEEE, dd MMMM yyyy",
+                        Locale.getDefault()
+                ).format(new Date())
+        );
+
 
         setupRecyclerView();
 
-        if (ownerId != null && !ownerId.isEmpty()) {
+        setupSearch();
+
+
+        if (ownerId != null &&
+                !ownerId.isEmpty()) {
 
             loadMembers();
 
         } else {
 
-            showToast("Owner session not found");
+            showToast(
+                    "Owner session not found"
+            );
         }
     }
 
@@ -113,12 +143,138 @@ public class TiffinFragment extends Fragment {
 
     private void initializeViews(View view) {
 
-        recyclerTiffin = view.findViewById(R.id.recyclerTiffin);
-        emptyLayout = view.findViewById(R.id.emptyLayout);
-        txtTodayDate = view.findViewById(R.id.txtTodayDate);
-        txtFullCount = view.findViewById(R.id.txtFullCount);
-        txtHalfCount = view.findViewById(R.id.txtHalfCount);
-        txtNotCollectedCount = view.findViewById(R.id.txtNotCollectedCount);
+        recyclerTiffin =
+                view.findViewById(
+                        R.id.recyclerTiffin
+                );
+
+        emptyLayout =
+                view.findViewById(
+                        R.id.emptyLayout
+                );
+
+        txtTodayDate =
+                view.findViewById(
+                        R.id.txtTodayDate
+                );
+
+        txtFullCount =
+                view.findViewById(
+                        R.id.txtFullCount
+                );
+
+        txtHalfCount =
+                view.findViewById(
+                        R.id.txtHalfCount
+                );
+
+        txtNotCollectedCount =
+                view.findViewById(
+                        R.id.txtNotCollectedCount
+                );
+
+        // Search bar
+        etSearchTiffin =
+                view.findViewById(
+                        R.id.etSearchTiffin
+                );
+    }
+
+
+    // =========================================================
+    // SEARCH
+    // =========================================================
+
+    private void setupSearch() {
+
+        etSearchTiffin.addTextChangedListener(
+                new TextWatcher() {
+
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s,
+                            int start,
+                            int count,
+                            int after) {
+                    }
+
+
+                    @Override
+                    public void onTextChanged(
+                            CharSequence s,
+                            int start,
+                            int before,
+                            int count) {
+
+                        filterMembers(
+                                s.toString()
+                        );
+                    }
+
+
+                    @Override
+                    public void afterTextChanged(
+                            Editable s) {
+                    }
+                }
+        );
+    }
+
+
+    private void filterMembers(String query) {
+
+        String searchText =
+                query.trim().toLowerCase(
+                        Locale.getDefault()
+                );
+
+
+        memberList.clear();
+
+
+        if (searchText.isEmpty()) {
+
+            memberList.addAll(
+                    allMembers
+            );
+
+        } else {
+
+            for (Member member : allMembers) {
+
+                String name =
+                        member.getName();
+
+                String phone =
+                        member.getPhone();
+
+
+                boolean nameMatches =
+                        name != null &&
+                                name.toLowerCase(
+                                        Locale.getDefault()
+                                ).contains(searchText);
+
+
+                boolean phoneMatches =
+                        phone != null &&
+                                phone.toLowerCase(
+                                        Locale.getDefault()
+                                ).contains(searchText);
+
+
+                if (nameMatches ||
+                        phoneMatches) {
+
+                    memberList.add(member);
+                }
+            }
+        }
+
+
+        adapter.notifyDataSetChanged();
+
+        updateEmptyState();
     }
 
 
@@ -127,8 +283,21 @@ public class TiffinFragment extends Fragment {
     // =========================================================
 
     private void setupRecyclerView() {
-        recyclerTiffin.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new TiffinAdapter(memberList, this::saveCollection);
+
+        recyclerTiffin.setLayoutManager(
+                new LinearLayoutManager(
+                        requireContext()
+                )
+        );
+
+
+        adapter =
+                new TiffinAdapter(
+                        memberList,
+                        this::saveCollection
+                );
+
+
         recyclerTiffin.setAdapter(adapter);
     }
 
@@ -139,41 +308,67 @@ public class TiffinFragment extends Fragment {
 
     private void loadMembers() {
 
-        firestore.collection("members").whereEqualTo("ownerId", ownerId).get()
+        firestore
+                .collection("members")
+                .whereEqualTo(
+                        "ownerId",
+                        ownerId
+                )
+                .get()
 
-                .addOnSuccessListener(querySnapshot -> {
+                .addOnSuccessListener(
+                        querySnapshot -> {
 
-                    memberList.clear();
+                            // Clear both lists
+                            memberList.clear();
 
-
-                    querySnapshot.getDocuments().forEach(document -> {
-
-                        Member member = document.toObject(Member.class);
-
-
-                        if (member != null) {
-
-                            member.setDocumentId(document.getId());
+                            allMembers.clear();
 
 
-                            memberList.add(member);
+                            querySnapshot
+                                    .getDocuments()
+                                    .forEach(document -> {
+
+                                        Member member =
+                                                document.toObject(
+                                                        Member.class
+                                                );
+
+
+                                        if (member != null) {
+
+                                            member.setDocumentId(
+                                                    document.getId()
+                                            );
+
+                                            // Store in master list
+                                            allMembers.add(
+                                                    member
+                                            );
+                                        }
+                                    });
+
+
+                            // Apply current search
+                            filterMembers(
+                                    etSearchTiffin
+                                            .getText()
+                                            .toString()
+                            );
+
+
+                            loadTodaySummary();
                         }
-                    });
+                )
 
+                .addOnFailureListener(
+                        e -> {
 
-                    adapter.notifyDataSetChanged();
-
-
-                    updateEmptyState();
-
-
-                    loadTodaySummary();
-                })
-
-                .addOnFailureListener(e -> {
-
-                    showToast("Failed to load members");
-                });
+                            showToast(
+                                    "Failed to load members"
+                            );
+                        }
+                );
     }
 
 
@@ -181,42 +376,72 @@ public class TiffinFragment extends Fragment {
     // SAVE TIFFIN / DINNER
     // =========================================================
 
-    private void saveCollection(Member member, String tiffin, boolean dinner) {
+    private void saveCollection(
+            Member member,
+            String tiffin,
+            boolean dinner) {
 
 
         if (member.getDocumentId() == null) {
 
-            showToast("Member ID not found");
+            showToast(
+                    "Member ID not found"
+            );
 
             return;
         }
 
 
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data =
+                new HashMap<>();
 
 
-        data.put("ownerId", ownerId);
+        data.put(
+                "ownerId",
+                ownerId
+        );
 
 
-        data.put("memberDocumentId", member.getDocumentId());
+        data.put(
+                "memberDocumentId",
+                member.getDocumentId()
+        );
 
 
-        data.put("memberUid", member.getMemberUid());
+        data.put(
+                "memberUid",
+                member.getMemberUid()
+        );
 
 
-        data.put("memberName", member.getName());
+        data.put(
+                "memberName",
+                member.getName()
+        );
 
 
-        data.put("phone", member.getPhone());
+        data.put(
+                "phone",
+                member.getPhone()
+        );
 
 
-        data.put("date", todayDate);
+        data.put(
+                "date",
+                todayDate
+        );
 
 
-        data.put("tiffin", tiffin);
+        data.put(
+                "tiffin",
+                tiffin
+        );
 
 
-        data.put("dinner", dinner);
+        data.put(
+                "dinner",
+                dinner
+        );
 
 
         /*
@@ -226,19 +451,34 @@ public class TiffinFragment extends Fragment {
          * much easier.
          */
 
-        String documentId = member.getDocumentId() + "_" + todayDate;
+        String documentId =
+                member.getDocumentId()
+                        + "_"
+                        + todayDate;
 
 
-        firestore.collection("tiffin_records").document(documentId).set(data, SetOptions.merge())
+        firestore
+                .collection("tiffin_records")
+                .document(documentId)
+                .set(
+                        data,
+                        SetOptions.merge()
+                )
 
-                .addOnSuccessListener(unused -> {
+                .addOnSuccessListener(
+                        unused -> {
 
-                    loadTodaySummary();
-                })
+                            loadTodaySummary();
+                        }
+                )
 
-                .addOnFailureListener(e -> {
+                .addOnFailureListener(
+                        e -> {
 
-                            showToast("Failed to save collection: " + e.getMessage());
+                            showToast(
+                                    "Failed to save collection: "
+                                            + e.getMessage()
+                            );
                         }
                 );
     }
@@ -250,45 +490,73 @@ public class TiffinFragment extends Fragment {
 
     private void loadTodaySummary() {
 
-        firestore.collection("tiffin_records").whereEqualTo("ownerId", ownerId).whereEqualTo("date", todayDate).get()
+        firestore
+                .collection("tiffin_records")
+                .whereEqualTo(
+                        "ownerId",
+                        ownerId
+                )
+                .whereEqualTo(
+                        "date",
+                        todayDate
+                )
+                .get()
 
-                .addOnSuccessListener(querySnapshot -> {
+                .addOnSuccessListener(
+                        querySnapshot -> {
 
-                    int full = 0;
+                            int full = 0;
 
-                    int half = 0;
+                            int half = 0;
 
-                    int notCollected = 0;
-
-
-                    for (com.google.firebase.firestore.DocumentSnapshot document : querySnapshot) {
-
-                        String tiffin = document.getString("tiffin");
+                            int notCollected = 0;
 
 
-                        if ("full".equals(tiffin)) {
+                            for (
+                                    com.google.firebase.firestore.DocumentSnapshot document :
+                                    querySnapshot
+                            ) {
 
-                            full++;
+                                String tiffin =
+                                        document.getString(
+                                                "tiffin"
+                                        );
 
-                        } else if ("half".equals(tiffin)) {
 
-                            half++;
+                                if ("full".equals(tiffin)) {
 
-                        } else {
+                                    full++;
 
-                            notCollected++;
+                                } else if (
+                                        "half".equals(tiffin)
+                                ) {
+
+                                    half++;
+
+                                } else {
+
+                                    notCollected++;
+                                }
+                            }
+
+
+                            txtFullCount.setText(
+                                    String.valueOf(full)
+                            );
+
+
+                            txtHalfCount.setText(
+                                    String.valueOf(half)
+                            );
+
+
+                            txtNotCollectedCount.setText(
+                                    String.valueOf(
+                                            notCollected
+                                    )
+                            );
                         }
-                    }
-
-
-                    txtFullCount.setText(String.valueOf(full));
-
-
-                    txtHalfCount.setText(String.valueOf(half));
-
-
-                    txtNotCollectedCount.setText(String.valueOf(notCollected));
-                });
+                );
     }
 
 
@@ -300,15 +568,23 @@ public class TiffinFragment extends Fragment {
 
         if (memberList.isEmpty()) {
 
-            emptyLayout.setVisibility(View.VISIBLE);
+            emptyLayout.setVisibility(
+                    View.VISIBLE
+            );
 
-            recyclerTiffin.setVisibility(View.GONE);
+            recyclerTiffin.setVisibility(
+                    View.GONE
+            );
 
         } else {
 
-            emptyLayout.setVisibility(View.GONE);
+            emptyLayout.setVisibility(
+                    View.GONE
+            );
 
-            recyclerTiffin.setVisibility(View.VISIBLE);
+            recyclerTiffin.setVisibility(
+                    View.VISIBLE
+            );
         }
     }
 
@@ -323,7 +599,8 @@ public class TiffinFragment extends Fragment {
         super.onResume();
 
 
-        if (ownerId != null && !ownerId.isEmpty()) {
+        if (ownerId != null &&
+                !ownerId.isEmpty()) {
 
             loadMembers();
         }
@@ -332,6 +609,10 @@ public class TiffinFragment extends Fragment {
 
     private void showToast(String message) {
 
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(
+                requireContext(),
+                message,
+                Toast.LENGTH_SHORT
+        ).show();
     }
 }

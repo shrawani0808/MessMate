@@ -14,6 +14,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,9 +43,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -57,12 +61,24 @@ public class BillingFragment extends Fragment {
     private ImageButton btnPreviousMonth;
     private ImageButton btnNextMonth;
 
+    private EditText edtBillingSearch;
+
     private FirebaseFirestore firestore;
     private SessionManager sessionManager;
 
     private Calendar selectedMonth;
 
     private double defaultTiffinRate = 50.0;
+
+    // =========================================================
+    // SEARCH DATA
+    // =========================================================
+
+    private final List<BillingMember> billingMembers = new ArrayList<>();
+
+    // =========================================================
+    // COLORS
+    // =========================================================
 
     private final int GREEN = Color.rgb(47, 132, 100);
     private final int LIGHT_GREEN = Color.rgb(235, 247, 241);
@@ -76,15 +92,12 @@ public class BillingFragment extends Fragment {
     // =========================================================
 
     private final int FULL_TIFFIN_BG = Color.rgb(232, 247, 238);
-
     private final int FULL_TIFFIN_TEXT = Color.rgb(35, 120, 75);
 
     private final int HALF_TIFFIN_BG = Color.rgb(255, 239, 222);
-
     private final int HALF_TIFFIN_TEXT = Color.rgb(225, 105, 20);
 
     private final int NOT_COLLECTED_BG = Color.rgb(255, 232, 232);
-
     private final int NOT_COLLECTED_TEXT = Color.rgb(220, 55, 55);
 
     // =========================================================
@@ -131,7 +144,11 @@ public class BillingFragment extends Fragment {
 
         memberContainer = view.findViewById(R.id.memberContainer);
 
+        edtBillingSearch = view.findViewById(R.id.edtBillingSearch);
+
         updateMonthText();
+
+        setupBillingSearch();
 
         loadOwnerDefaultRate();
 
@@ -160,6 +177,116 @@ public class BillingFragment extends Fragment {
 
             loadMembers();
         });
+    }
+
+    // =========================================================
+    // BILLING SEARCH
+    // =========================================================
+
+    private void setupBillingSearch() {
+
+        edtBillingSearch.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                filterMembers(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+    }
+
+    // =========================================================
+    // FILTER MEMBERS
+    // =========================================================
+
+    private void filterMembers(String searchText) {
+
+        String query = searchText == null ? "" : searchText.trim().toLowerCase(Locale.getDefault());
+
+        memberContainer.removeAllViews();
+
+        if (billingMembers.isEmpty()) {
+
+            showNoMembers();
+
+            return;
+        }
+
+        int matchingMembers = 0;
+
+        for (BillingMember member : billingMembers) {
+
+            String name = member.name == null ? "" : member.name.toLowerCase(Locale.getDefault());
+
+            String email = member.email == null ? "" : member.email.toLowerCase(Locale.getDefault());
+
+            if (query.isEmpty() || name.contains(query) || email.contains(query)) {
+
+                addMemberCard(member.memberId, member.name, member.email, member.memberRate);
+
+                matchingMembers++;
+            }
+        }
+
+        if (matchingMembers == 0) {
+
+            showNoSearchResults();
+        }
+    }
+
+    // =========================================================
+    // NO SEARCH RESULTS
+    // =========================================================
+
+    private void showNoSearchResults() {
+
+        LinearLayout emptyLayout = new LinearLayout(requireContext());
+
+        emptyLayout.setOrientation(LinearLayout.VERTICAL);
+
+        emptyLayout.setGravity(Gravity.CENTER);
+
+        emptyLayout.setPadding(dp(20), dp(60), dp(20), dp(20));
+
+        TextView title = new TextView(requireContext());
+
+        title.setText("No members found");
+
+        title.setTextSize(17);
+
+        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+
+        title.setTextColor(Color.BLACK);
+
+        title.setGravity(Gravity.CENTER);
+
+        TextView subtitle = new TextView(requireContext());
+
+        subtitle.setText("Try a different name or email");
+
+        subtitle.setTextSize(14);
+
+        subtitle.setTextColor(Color.GRAY);
+
+        subtitle.setGravity(Gravity.CENTER);
+
+        emptyLayout.addView(title);
+
+        LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        subtitleParams.setMargins(0, dp(5), 0, 0);
+
+        emptyLayout.addView(subtitle, subtitleParams);
+
+        memberContainer.addView(emptyLayout, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(250)));
     }
 
     // =========================================================
@@ -216,6 +343,7 @@ public class BillingFragment extends Fragment {
             }
 
             loadMembers();
+
         }).addOnFailureListener(e -> loadMembers());
     }
 
@@ -240,6 +368,8 @@ public class BillingFragment extends Fragment {
 
         memberContainer.removeAllViews();
 
+        billingMembers.clear();
+
         firestore.collection("members").whereEqualTo("ownerId", ownerId).get().addOnSuccessListener(queryDocumentSnapshots -> {
 
             if (!isAdded()) {
@@ -247,6 +377,8 @@ public class BillingFragment extends Fragment {
             }
 
             memberContainer.removeAllViews();
+
+            billingMembers.clear();
 
             if (queryDocumentSnapshots.isEmpty()) {
 
@@ -277,8 +409,11 @@ public class BillingFragment extends Fragment {
                     saveInitialMemberRate(memberId, memberRate);
                 }
 
-                addMemberCard(memberId, name, email, memberRate);
+                billingMembers.add(new BillingMember(memberId, name, email, memberRate));
             }
+
+            filterMembers(edtBillingSearch.getText().toString());
+
         }).addOnFailureListener(e -> {
 
             if (!isAdded()) {
@@ -470,7 +605,9 @@ public class BillingFragment extends Fragment {
         TextView tvName = new TextView(requireContext());
 
         tvName.setText(name);
+
         tvName.setTextSize(17);
+
         tvName.setTextColor(TEXT_PRIMARY);
 
         tvName.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
@@ -486,8 +623,11 @@ public class BillingFragment extends Fragment {
             TextView tvEmail = new TextView(requireContext());
 
             tvEmail.setText(email);
+
             tvEmail.setTextSize(12);
+
             tvEmail.setTextColor(TEXT_SECONDARY);
+
             tvEmail.setSingleLine(true);
 
             tvEmail.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -526,7 +666,9 @@ public class BillingFragment extends Fragment {
         TextView rateLabel = new TextView(requireContext());
 
         rateLabel.setText("Tiffin Rate");
+
         rateLabel.setTextSize(11);
+
         rateLabel.setTextColor(TEXT_SECONDARY);
 
         TextView rateValue = new TextView(requireContext());
@@ -534,6 +676,7 @@ public class BillingFragment extends Fragment {
         rateValue.setText(formatRate(memberRate));
 
         rateValue.setTextSize(15);
+
         rateValue.setTextColor(TEXT_PRIMARY);
 
         rateValue.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
@@ -543,6 +686,7 @@ public class BillingFragment extends Fragment {
         rateValueParams.setMargins(0, dp(2), 0, 0);
 
         rateInfo.addView(rateLabel);
+
         rateInfo.addView(rateValue, rateValueParams);
 
         rateRow.addView(rateInfo, rateInfoParams);
@@ -550,14 +694,21 @@ public class BillingFragment extends Fragment {
         Button editRateButton = new Button(requireContext());
 
         editRateButton.setText("Edit Rate");
+
         editRateButton.setAllCaps(false);
+
         editRateButton.setTextSize(12);
+
         editRateButton.setTextColor(GREEN);
+
         editRateButton.setGravity(Gravity.CENTER);
 
         editRateButton.setMinWidth(0);
+
         editRateButton.setMinimumWidth(0);
+
         editRateButton.setMinHeight(0);
+
         editRateButton.setMinimumHeight(0);
 
         editRateButton.setPadding(dp(13), 0, dp(13), 0);
@@ -591,7 +742,9 @@ public class BillingFragment extends Fragment {
         calculateButton.setText("Calculate Monthly Bill");
 
         calculateButton.setAllCaps(false);
+
         calculateButton.setTextSize(13);
+
         calculateButton.setTextColor(WHITE);
 
         calculateButton.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
@@ -599,8 +752,11 @@ public class BillingFragment extends Fragment {
         calculateButton.setGravity(Gravity.CENTER);
 
         calculateButton.setMinWidth(0);
+
         calculateButton.setMinimumWidth(0);
+
         calculateButton.setMinHeight(0);
+
         calculateButton.setMinimumHeight(0);
 
         calculateButton.setPadding(dp(12), 0, dp(12), 0);
@@ -610,6 +766,7 @@ public class BillingFragment extends Fragment {
         LinearLayout.LayoutParams calculateParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(44));
 
         final String finalName = name;
+
         final String finalEmail = email;
 
         calculateButton.setOnClickListener(v -> calculateMonthlyBill(memberId, finalName, finalEmail));
@@ -717,6 +874,17 @@ public class BillingFragment extends Fragment {
 
             rateValue.setText(formatRate(newRate));
 
+            // Keep local search data synchronized
+            for (BillingMember member : billingMembers) {
+
+                if (member.memberId.equals(memberId)) {
+
+                    member.memberRate = newRate;
+
+                    break;
+                }
+            }
+
             Toast.makeText(requireContext(), "Tiffin rate updated", Toast.LENGTH_SHORT).show();
 
             dialog.dismiss();
@@ -776,8 +944,11 @@ public class BillingFragment extends Fragment {
         firestore.collection("tiffin_records").whereEqualTo("ownerId", ownerId).whereEqualTo("memberDocumentId", memberId).get().addOnSuccessListener(query -> {
 
             double totalTiffins = 0;
+
             int totalDays = 0;
+
             int fullTiffins = 0;
+
             int halfTiffins = 0;
 
             for (QueryDocumentSnapshot document : query) {
@@ -819,13 +990,17 @@ public class BillingFragment extends Fragment {
                 if ("full".equalsIgnoreCase(tiffin)) {
 
                     fullTiffins++;
+
                     totalTiffins += 1.0;
+
                     totalDays++;
 
                 } else if ("half".equalsIgnoreCase(tiffin)) {
 
                     halfTiffins++;
+
                     totalTiffins += 0.5;
+
                     totalDays++;
                 }
             }
@@ -918,6 +1093,7 @@ public class BillingFragment extends Fragment {
         PdfDocument pdfDocument = new PdfDocument();
 
         final int PAGE_WIDTH = 595;
+
         final int PAGE_HEIGHT = 842;
 
         PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(PAGE_WIDTH, PAGE_HEIGHT, 1).create();
@@ -933,15 +1109,25 @@ public class BillingFragment extends Fragment {
         // =====================================================
 
         final int GREEN = Color.rgb(35, 120, 82);
+
         final int LIGHT_GREEN = Color.rgb(239, 248, 243);
+
         final int PALE_GREEN = Color.rgb(248, 252, 249);
+
         final int BORDER = Color.rgb(205, 222, 214);
+
         final int TEXT = Color.rgb(35, 35, 35);
+
         final int GREY = Color.rgb(95, 95, 95);
+
         final int ORANGE = Color.rgb(232, 126, 18);
+
         final int RED = Color.rgb(195, 45, 45);
+
         final int FULL_BG = Color.rgb(230, 244, 235);
+
         final int HALF_BG = Color.rgb(255, 239, 218);
+
         final int NOT_BG = Color.rgb(255, 231, 231);
 
         // =====================================================
@@ -949,7 +1135,9 @@ public class BillingFragment extends Fragment {
         // =====================================================
 
         paint.setStyle(android.graphics.Paint.Style.STROKE);
+
         paint.setStrokeWidth(1.2f);
+
         paint.setColor(Color.rgb(225, 225, 225));
 
         canvas.drawRoundRect(12, 12, PAGE_WIDTH - 12, PAGE_HEIGHT - 12, 12, 12, paint);
@@ -1003,12 +1191,12 @@ public class BillingFragment extends Fragment {
         String initial = "M";
 
         if (memberName != null && !memberName.trim().isEmpty()) {
+
             initial = memberName.substring(0, 1).toUpperCase(Locale.getDefault());
         }
 
         drawPdfTextCenter(canvas, paint, initial, 80, 201, 25, GREEN, true);
 
-        // Vertical separator
         paint.setColor(BORDER);
 
         canvas.drawRect(123, 165, 124, 219, paint);
@@ -1016,6 +1204,7 @@ public class BillingFragment extends Fragment {
         drawPdfText(canvas, paint, memberName == null ? "Member" : memberName, 143, 190, 15, TEXT, true);
 
         if (email != null && !email.trim().isEmpty()) {
+
             drawPdfText(canvas, paint, email, 143, 211, 10.5f, TEXT, false);
         }
 
@@ -1031,50 +1220,30 @@ public class BillingFragment extends Fragment {
 
         drawPdfText(canvas, paint, "(" + month.toUpperCase(Locale.getDefault()) + ")", 183, 283, 8.5f, GREY, false);
 
-        // =====================================================
-        // FIXED SUMMARY ROW SPACING
-        // =====================================================
-        // Previously the rows were 34px apart:
-        //
-        // 318, 352, 386, 420, 454, 488
-        //
-        // The "Not Collected" row at 488 was too close to
-        // "TOTAL BILL" at 492 and caused the overlap.
-        //
-        // The new spacing keeps the same design but gives
-        // sufficient separation between the last row and total.
-        // =====================================================
-
         int rowY = 310;
 
-        // Rate
         drawPdfSummaryRow(canvas, paint, "Tiffin Rate (per tiffin)", String.format(Locale.getDefault(), "₹ %.2f", memberRate), rowY, TEXT, true);
 
         rowY += 29;
 
-        // Total tiffin quantity
         drawPdfSummaryRow(canvas, paint, "Tiffin Quantity", String.format(Locale.getDefault(), "%.1f", totalTiffins), rowY, TEXT, false);
 
         rowY += 29;
 
-        // Total days in selected month
         int daysInMonth = selectedMonth.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         drawPdfSummaryRow(canvas, paint, "Total Days in Month", String.valueOf(daysInMonth), rowY, TEXT, false);
 
         rowY += 29;
 
-        // Full
         drawPdfSummaryRow(canvas, paint, "Full Tiffins", String.valueOf(fullTiffins), rowY, GREEN, true);
 
         rowY += 29;
 
-        // Half
         drawPdfSummaryRow(canvas, paint, "Half Tiffins", String.valueOf(halfTiffins), rowY, ORANGE, true);
 
         rowY += 29;
 
-        // Not collected
         int notCollected = Math.max(0, daysInMonth - fullTiffins - halfTiffins);
 
         drawPdfSummaryRow(canvas, paint, "Not Collected", String.valueOf(notCollected), rowY, RED, true);
@@ -1084,11 +1253,11 @@ public class BillingFragment extends Fragment {
         // =====================================================
 
         paint.setColor(Color.rgb(155, 195, 176));
+
         paint.setStrokeWidth(1);
 
-        // Moved slightly down so it stays clearly below
-        // the Not Collected row.
         for (int x = 47; x < 548; x += 7) {
+
             canvas.drawRect(x, 474, Math.min(x + 4, 548), 475, paint);
         }
 
@@ -1117,8 +1286,6 @@ public class BillingFragment extends Fragment {
         int halfPercent = Math.round((halfTiffins * 100f) / Math.max(1, daysInMonth));
 
         int notPercent = Math.round((notCollected * 100f) / Math.max(1, daysInMonth));
-
-        // Vertical separators
 
         paint.setColor(BORDER);
 
@@ -1210,7 +1377,6 @@ public class BillingFragment extends Fragment {
 
         // =====================================================
         // SAVE PDF
-        // SAME STORAGE LOGIC AS BEFORE
         // =====================================================
 
         try {
@@ -1250,6 +1416,7 @@ public class BillingFragment extends Fragment {
                 File downloadsDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
                 if (!downloadsDirectory.exists()) {
+
                     downloadsDirectory.mkdirs();
                 }
 
@@ -1286,7 +1453,6 @@ public class BillingFragment extends Fragment {
 
         canvas.drawRoundRect(left, top, right, bottom, 10, 10, paint);
 
-
         paint.setStyle(android.graphics.Paint.Style.STROKE);
 
         paint.setStrokeWidth(0.8f);
@@ -1295,203 +1461,81 @@ public class BillingFragment extends Fragment {
 
         canvas.drawRoundRect(left, top, right, bottom, 10, 10, paint);
 
-
         paint.setStyle(android.graphics.Paint.Style.FILL);
     }
 
+    // =========================================================
+    // PDF SUMMARY ROW
+    // =========================================================
 
-// =========================================================
-// PDF SUMMARY ROW
-// =========================================================
+    private void drawPdfSummaryRow(android.graphics.Canvas canvas, android.graphics.Paint paint, String label, String value, float y, int valueColor, boolean boldValue) {
 
-    private void drawPdfSummaryRow(
-            android.graphics.Canvas canvas,
-            android.graphics.Paint paint,
-            String label,
-            String value,
-            float y,
-            int valueColor,
-            boolean boldValue) {
+        drawPdfText(canvas, paint, label, 47, y, 10.5f, Color.rgb(35, 35, 35), false);
 
-        drawPdfText(
-                canvas,
-                paint,
-                label,
-                47,
-                y,
-                10.5f,
-                Color.rgb(35, 35, 35),
-                false
-        );
+        drawPdfTextRight(canvas, paint, value, 548, y, 10.5f, valueColor, boldValue);
 
-
-        drawPdfTextRight(
-                canvas,
-                paint,
-                value,
-                548,
-                y,
-                10.5f,
-                valueColor,
-                boldValue
-        );
-
-
-        paint.setColor(
-                Color.rgb(235, 238, 236)
-        );
+        paint.setColor(Color.rgb(235, 238, 236));
 
         paint.setStrokeWidth(0.7f);
 
-
-        canvas.drawRect(
-                47,
-                y + 13,
-                548,
-                y + 14,
-                paint
-        );
+        canvas.drawRect(47, y + 13, 548, y + 14, paint);
     }
 
+    // =========================================================
+    // PDF TEXT
+    // =========================================================
 
-// =========================================================
-// PDF TEXT
-// =========================================================
+    private void drawPdfText(android.graphics.Canvas canvas, android.graphics.Paint paint, String text, float x, float y, float size, int color, boolean bold) {
 
-    private void drawPdfText(
-            android.graphics.Canvas canvas,
-            android.graphics.Paint paint,
-            String text,
-            float x,
-            float y,
-            float size,
-            int color,
-            boolean bold) {
-
-        paint.setStyle(
-                android.graphics.Paint.Style.FILL
-        );
+        paint.setStyle(android.graphics.Paint.Style.FILL);
 
         paint.setColor(color);
 
         paint.setTextSize(size);
 
-        paint.setTextAlign(
-                android.graphics.Paint.Align.LEFT
-        );
+        paint.setTextAlign(android.graphics.Paint.Align.LEFT);
 
-        paint.setTypeface(
-                Typeface.create(
-                        "sans",
-                        bold
-                                ? Typeface.BOLD
-                                : Typeface.NORMAL
-                )
-        );
+        paint.setTypeface(Typeface.create("sans", bold ? Typeface.BOLD : Typeface.NORMAL));
 
-
-        canvas.drawText(
-                text == null
-                        ? ""
-                        : text,
-                x,
-                y,
-                paint
-        );
+        canvas.drawText(text == null ? "" : text, x, y, paint);
     }
 
+    // =========================================================
+    // PDF TEXT RIGHT
+    // =========================================================
 
-// =========================================================
-// PDF TEXT RIGHT
-// =========================================================
+    private void drawPdfTextRight(android.graphics.Canvas canvas, android.graphics.Paint paint, String text, float x, float y, float size, int color, boolean bold) {
 
-    private void drawPdfTextRight(
-            android.graphics.Canvas canvas,
-            android.graphics.Paint paint,
-            String text,
-            float x,
-            float y,
-            float size,
-            int color,
-            boolean bold) {
-
-        paint.setStyle(
-                android.graphics.Paint.Style.FILL
-        );
+        paint.setStyle(android.graphics.Paint.Style.FILL);
 
         paint.setColor(color);
 
         paint.setTextSize(size);
 
-        paint.setTextAlign(
-                android.graphics.Paint.Align.RIGHT
-        );
+        paint.setTextAlign(android.graphics.Paint.Align.RIGHT);
 
-        paint.setTypeface(
-                Typeface.create(
-                        "sans",
-                        bold
-                                ? Typeface.BOLD
-                                : Typeface.NORMAL
-                )
-        );
+        paint.setTypeface(Typeface.create("sans", bold ? Typeface.BOLD : Typeface.NORMAL));
 
-
-        canvas.drawText(
-                text == null
-                        ? ""
-                        : text,
-                x,
-                y,
-                paint
-        );
+        canvas.drawText(text == null ? "" : text, x, y, paint);
     }
 
+    // =========================================================
+    // PDF TEXT CENTER
+    // =========================================================
 
-// =========================================================
-// PDF TEXT CENTER
-// =========================================================
+    private void drawPdfTextCenter(android.graphics.Canvas canvas, android.graphics.Paint paint, String text, float x, float y, float size, int color, boolean bold) {
 
-    private void drawPdfTextCenter(
-            android.graphics.Canvas canvas,
-            android.graphics.Paint paint,
-            String text,
-            float x,
-            float y,
-            float size,
-            int color,
-            boolean bold) {
-
-        paint.setStyle(
-                android.graphics.Paint.Style.FILL
-        );
+        paint.setStyle(android.graphics.Paint.Style.FILL);
 
         paint.setColor(color);
 
         paint.setTextSize(size);
 
-        paint.setTextAlign(
-                android.graphics.Paint.Align.CENTER
-        );
+        paint.setTextAlign(android.graphics.Paint.Align.CENTER);
 
-        paint.setTypeface(
-                Typeface.create(
-                        "sans",
-                        bold
-                                ? Typeface.BOLD
-                                : Typeface.NORMAL
-                )
-        );
+        paint.setTypeface(Typeface.create("sans", bold ? Typeface.BOLD : Typeface.NORMAL));
 
-
-        canvas.drawText(
-                text == null
-                        ? ""
-                        : text,
-                x,
-                y,
-                paint
-        );
+        canvas.drawText(text == null ? "" : text, x, y, paint);
     }
 
     // =========================================================
@@ -1503,7 +1547,9 @@ public class BillingFragment extends Fragment {
         paint.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
 
         paint.setTextSize(10.5f);
+
         paint.setTextAlign(Paint.Align.LEFT);
+
         paint.setColor(labelColor);
 
         canvas.drawText(label, 48, y, paint);
@@ -1511,6 +1557,7 @@ public class BillingFragment extends Fragment {
         paint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
 
         paint.setTextAlign(Paint.Align.RIGHT);
+
         paint.setColor(valueColor);
 
         canvas.drawText(value, 550, y, paint);
@@ -1673,7 +1720,9 @@ public class BillingFragment extends Fragment {
         Button closeButton = new Button(requireContext());
 
         closeButton.setText("Close");
+
         closeButton.setAllCaps(false);
+
         closeButton.setTextColor(GREEN);
 
         closeButton.setOnClickListener(v -> dialog.dismiss());
@@ -1744,6 +1793,7 @@ public class BillingFragment extends Fragment {
                 }
 
                 if (tiffin == null) {
+
                     tiffin = "";
                 }
 
@@ -1784,7 +1834,9 @@ public class BillingFragment extends Fragment {
             TextView dayText = new TextView(requireContext());
 
             dayText.setText(day);
+
             dayText.setTextSize(11);
+
             dayText.setTextColor(TEXT_SECONDARY);
 
             dayText.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
@@ -1819,6 +1871,7 @@ public class BillingFragment extends Fragment {
         }
 
         int currentDay = 1;
+
         int nextMonthDay = 1;
 
         for (int row = 0; row < rows; row++) {
@@ -1966,7 +2019,9 @@ public class BillingFragment extends Fragment {
         TextView label = new TextView(requireContext());
 
         label.setText(text);
+
         label.setTextSize(10);
+
         label.setTextColor(textColor);
 
         LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -2010,6 +2065,32 @@ public class BillingFragment extends Fragment {
         textView.setTextColor(textColor);
 
         textView.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+    }
+
+    // =========================================================
+    // BILLING MEMBER SEARCH MODEL
+    // =========================================================
+
+    private static class BillingMember {
+
+        String memberId;
+
+        String name;
+
+        String email;
+
+        double memberRate;
+
+        BillingMember(String memberId, String name, String email, double memberRate) {
+
+            this.memberId = memberId;
+
+            this.name = name;
+
+            this.email = email;
+
+            this.memberRate = memberRate;
+        }
     }
 
     // =========================================================

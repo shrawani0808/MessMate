@@ -1,6 +1,5 @@
 package com.example.messmate.presentation.owner.members.adapters;
 
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,7 +55,9 @@ public class MemberAdapter
 
         Member member = memberList.get(position);
 
-        holder.txtMemberName.setText(member.getName());
+        holder.txtMemberName.setText(
+                member.getName()
+        );
 
         holder.txtMemberPhone.setText(
                 member.getPhone()
@@ -69,7 +70,8 @@ public class MemberAdapter
 
         String name = member.getName();
 
-        if (name != null && !name.trim().isEmpty()) {
+        if (name != null &&
+                !name.trim().isEmpty()) {
 
             holder.txtInitial.setText(
                     name.substring(0, 1).toUpperCase()
@@ -102,7 +104,8 @@ public class MemberAdapter
 
         ImageButton btnDeleteMember;
 
-        public MemberViewHolder(@NonNull View itemView) {
+        public MemberViewHolder(
+                @NonNull View itemView) {
 
             super(itemView);
 
