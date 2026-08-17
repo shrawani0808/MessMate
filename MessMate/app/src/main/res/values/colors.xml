@@ -40,4 +40,18 @@
     <color name="status_not_collected">#D9534F</color>
     <color name="status_pending">#8A9290</color>
 
+    <color name="tiffin_orange">#F57C00</color>
+    <color name="tiffin_orange_light">#FFF0E1</color>
+
+    <color name="tiffin_green">#087F3E</color>
+    <color name="tiffin_green_light">#E8F5EE</color>
+
+    <color name="tiffin_red">#E53935</color>
+    <color name="tiffin_red_light">#FDEAEA</color>
+
+    <color name="radio_full_tint">#16834B</color>
+    <color name="radio_half_tint">#F57C00</color>
+    <color name="radio_not_tint">#E53935</color>
+
+
 </resources>

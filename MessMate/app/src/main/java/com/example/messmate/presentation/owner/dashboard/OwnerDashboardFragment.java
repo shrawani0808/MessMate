@@ -1,6 +1,5 @@
 package com.example.messmate.presentation.owner.dashboard;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,24 +9,30 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.messmate.R;
 import com.example.messmate.presentation.auth.SessionManager;
-import com.example.messmate.presentation.owner.profile.OwnerProfileFragment;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class OwnerDashboardFragment extends Fragment {
 
+    // =========================================================
+    // UI
+    // =========================================================
+
     private TextView txtGreeting;
+    private TextView txtTodayProgress;
+    private TextView txtTodayPercentage;
     private TextView txtOwnerName;
     private TextView txtProfileInitial;
     private TextView txtTodayDate;
@@ -40,40 +45,101 @@ public class OwnerDashboardFragment extends Fragment {
 
     private TextView txtOverview;
 
+    // =========================================================
+    // PROGRESS BARS
+    // =========================================================
+
+    private LinearProgressIndicator progressLunch;
+    private LinearProgressIndicator progressDinner;
+    private LinearProgressIndicator progressToday;
+
+    // =========================================================
+    // FIREBASE
+    // =========================================================
+
     private FirebaseFirestore firestore;
     private SessionManager sessionManager;
 
     private String ownerId;
 
+    // =========================================================
+    // EXISTING COUNTS
+    // =========================================================
+
     private int totalMembers = 0;
+
     private int tiffinCollected = 0;
     private int dinnerCollected = 0;
 
+    // =========================================================
+    // NEW MEAL COUNTS
+    // =========================================================
+
+    private int lunchEligible = 0;
+    private int dinnerEligible = 0;
+
+    private int lunchPending = 0;
+    private int dinnerPending = 0;
+
+    // =========================================================
+    // DATA
+    // =========================================================
+
+    private final List<MemberInfo> members =
+            new ArrayList<>();
+
+    private final Map<String, TodayRecord> todayRecords =
+            new HashMap<>();
+
+    // =========================================================
+    // CREATE VIEW
+    // =========================================================
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
 
-        return inflater.inflate(R.layout.fragment_owner_dashboard, container, false);
+        return inflater.inflate(
+                R.layout.fragment_owner_dashboard,
+                container,
+                false
+        );
     }
 
+    // =========================================================
+    // VIEW CREATED
+    // =========================================================
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(
+            @NonNull View view,
+            @Nullable Bundle savedInstanceState) {
 
-        super.onViewCreated(view, savedInstanceState);
+        super.onViewCreated(
+                view,
+                savedInstanceState
+        );
 
         initializeViews(view);
 
-        firestore = FirebaseFirestore.getInstance();
+        firestore =
+                FirebaseFirestore.getInstance();
 
-        sessionManager = new SessionManager(requireContext());
+        sessionManager =
+                new SessionManager(
+                        requireContext()
+                );
 
-        ownerId = sessionManager.getUid();
+        ownerId =
+                sessionManager.getUid();
 
         setDate();
 
-        if (ownerId != null && !ownerId.isEmpty()) {
+        if (ownerId != null &&
+                !ownerId.isEmpty()) {
 
             loadOwnerProfile();
 
@@ -83,16 +149,11 @@ public class OwnerDashboardFragment extends Fragment {
 
         } else {
 
-            txtOverview.setText("Owner session not found.");
+            txtOverview.setText(
+                    "Owner session not found."
+            );
         }
-
-        txtProfileInitial.setOnClickListener(v -> {
-
-            NavController navController = Navigation.findNavController(v);
-            navController.navigate(R.id.ownerProfileFragment);
-        });
     }
-
 
     // =========================================================
     // INITIALIZE VIEWS
@@ -100,25 +161,79 @@ public class OwnerDashboardFragment extends Fragment {
 
     private void initializeViews(View view) {
 
-        txtGreeting = view.findViewById(R.id.txtGreeting);
+        txtGreeting =
+                view.findViewById(
+                        R.id.txtGreeting
+                );
 
-        txtOwnerName = view.findViewById(R.id.txtOwnerName);
+        txtOwnerName =
+                view.findViewById(
+                        R.id.txtOwnerName
+                );
 
-        txtProfileInitial = view.findViewById(R.id.txtProfileInitial);
+        txtProfileInitial =
+                view.findViewById(
+                        R.id.txtProfileInitial
+                );
 
-        txtTodayDate = view.findViewById(R.id.txtTodayDate);
+        txtTodayDate =
+                view.findViewById(
+                        R.id.txtTodayDate
+                );
 
-        txtTiffinCollected = view.findViewById(R.id.txtTiffinCollected);
+        txtTiffinCollected =
+                view.findViewById(
+                        R.id.txtTiffinCollected
+                );
 
-        txtDinnerCollected = view.findViewById(R.id.txtDinnerCollected);
+        txtDinnerCollected =
+                view.findViewById(
+                        R.id.txtDinnerCollected
+                );
 
-        txtTotalMembers = view.findViewById(R.id.txtTotalMembers);
+        txtTotalMembers =
+                view.findViewById(
+                        R.id.txtTotalMembers
+                );
 
-        txtPending = view.findViewById(R.id.txtPending);
+        txtPending =
+                view.findViewById(
+                        R.id.txtPending
+                );
+        txtTodayProgress =
+                view.findViewById(
+                        R.id.txtTodayProgress
+                );
 
-        txtOverview = view.findViewById(R.id.txtOverview);
+        txtTodayPercentage =
+                view.findViewById(
+                        R.id.txtTodayPercentage
+                );
+
+        txtOverview =
+                view.findViewById(
+                        R.id.txtOverview
+                );
+
+        // =====================================================
+        // PROGRESS BARS
+        // =====================================================
+
+        progressLunch =
+                view.findViewById(
+                        R.id.progressLunch
+                );
+
+        progressDinner =
+                view.findViewById(
+                        R.id.progressDinner
+                );
+
+        progressToday =
+                view.findViewById(
+                        R.id.collectionProgressBar
+                );
     }
-
 
     // =========================================================
     // DATE
@@ -126,16 +241,26 @@ public class OwnerDashboardFragment extends Fragment {
 
     private void setDate() {
 
-        Date today = new Date();
+        Date today =
+                new Date();
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault());
+        SimpleDateFormat dateFormat =
+                new SimpleDateFormat(
+                        "EEEE, dd MMMM yyyy",
+                        Locale.getDefault()
+                );
 
-        txtTodayDate.setText(dateFormat.format(today));
+        txtTodayDate.setText(
+                dateFormat.format(today)
+        );
 
+        java.util.Calendar calendar =
+                java.util.Calendar.getInstance();
 
-        Calendar calendar = Calendar.getInstance();
-
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int hour =
+                calendar.get(
+                        java.util.Calendar.HOUR_OF_DAY
+                );
 
         String greeting;
 
@@ -152,9 +277,10 @@ public class OwnerDashboardFragment extends Fragment {
             greeting = "Good Evening";
         }
 
-        txtGreeting.setText(greeting);
+        txtGreeting.setText(
+                greeting
+        );
     }
-
 
     // =========================================================
     // LOAD OWNER PROFILE
@@ -162,36 +288,69 @@ public class OwnerDashboardFragment extends Fragment {
 
     private void loadOwnerProfile() {
 
-        firestore.collection("users").document(ownerId).get()
+        firestore
+                .collection("users")
+                .document(ownerId)
+                .get()
 
-                .addOnSuccessListener(documentSnapshot -> {
+                .addOnSuccessListener(
+                        documentSnapshot -> {
 
-                    if (documentSnapshot.exists()) {
+                            if (!isAdded()) {
+                                return;
+                            }
 
-                        String name = documentSnapshot.getString("name");
+                            if (documentSnapshot.exists()) {
 
-                        if (name != null && !name.trim().isEmpty()) {
+                                String name =
+                                        documentSnapshot
+                                                .getString(
+                                                        "name"
+                                                );
 
-                            txtOwnerName.setText(name);
+                                if (name != null &&
+                                        !name.trim().isEmpty()) {
 
-                            String firstLetter = name.substring(0, 1).toUpperCase();
+                                    txtOwnerName.setText(
+                                            name
+                                    );
 
-                            txtProfileInitial.setText(firstLetter);
+                                    String firstLetter =
+                                            name.substring(
+                                                    0,
+                                                    1
+                                            ).toUpperCase(
+                                                    Locale.getDefault()
+                                            );
 
-                        } else {
+                                    txtProfileInitial.setText(
+                                            firstLetter
+                                    );
 
-                            txtOwnerName.setText("Owner");
-                            txtProfileInitial.setText("O");
+                                } else {
+
+                                    txtOwnerName.setText(
+                                            "Owner"
+                                    );
+
+                                    txtProfileInitial.setText(
+                                            "O"
+                                    );
+                                }
+
+                            } else {
+
+                                txtOwnerName.setText(
+                                        "Owner"
+                                );
+
+                                txtProfileInitial.setText(
+                                        "O"
+                                );
+                            }
                         }
-
-                    } else {
-
-                        txtOwnerName.setText("Owner");
-                        txtProfileInitial.setText("O");
-                    }
-                });
+                );
     }
-
 
     // =========================================================
     // LOAD TOTAL MEMBERS
@@ -199,24 +358,51 @@ public class OwnerDashboardFragment extends Fragment {
 
     private void loadMemberCount() {
 
-        firestore.collection("members").whereEqualTo("ownerId", ownerId).get()
+        firestore
+                .collection("members")
+                .whereEqualTo(
+                        "ownerId",
+                        ownerId
+                )
+                .get()
 
-                .addOnSuccessListener(querySnapshot -> {
+                .addOnSuccessListener(
+                        querySnapshot -> {
 
-                    totalMembers = querySnapshot.size();
+                            if (!isAdded()) {
+                                return;
+                            }
 
-                    txtTotalMembers.setText(String.valueOf(totalMembers));
+                            totalMembers =
+                                    querySnapshot.size();
 
-                    updatePendingCount();
+                            txtTotalMembers.setText(
+                                    String.valueOf(
+                                            totalMembers
+                                    )
+                            );
 
-                })
+                            loadTodayCollection();
+                        }
+                )
 
-                .addOnFailureListener(e -> {
+                .addOnFailureListener(
+                        e -> {
 
-                    txtTotalMembers.setText("0");
-                });
+                            if (!isAdded()) {
+                                return;
+                            }
+
+                            totalMembers = 0;
+
+                            txtTotalMembers.setText(
+                                    "0"
+                            );
+
+                            loadTodayCollection();
+                        }
+                );
     }
-
 
     // =========================================================
     // LOAD TODAY'S COLLECTION
@@ -224,85 +410,421 @@ public class OwnerDashboardFragment extends Fragment {
 
     private void loadTodayCollection() {
 
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        String today =
+                new SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.getDefault()
+                ).format(
+                        new Date()
+                );
 
+        /*
+         * First load members because eligibility depends
+         * on lunchEnabled and dinnerEnabled.
+         */
 
-        firestore.collection("tiffin_records").whereEqualTo("ownerId", ownerId).get()
+        firestore
+                .collection("members")
+                .whereEqualTo(
+                        "ownerId",
+                        ownerId
+                )
+                .get()
 
-                .addOnSuccessListener(querySnapshot -> {
+                .addOnSuccessListener(
+                        memberSnapshot -> {
 
-                    tiffinCollected = 0;
-                    dinnerCollected = 0;
-
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-
-                        String recordDate = document.getString("date");
-
-
-                        // Only today's records
-                        if (today.equals(recordDate)) {
-
-                            /*
-                             * IMPORTANT:
-                             *
-                             * Tiffin is now stored as a String:
-                             *
-                             * "full"
-                             * "half"
-                             * "none"
-                             *
-                             * So we must NOT use getBoolean("tiffin").
-                             */
-
-                            String tiffin = document.getString("tiffin");
-
-                            Boolean dinner = document.getBoolean("dinner");
-
-
-                            /*
-                             * Full and Half both mean
-                             * that a tiffin was collected.
-                             *
-                             * "none" means not collected.
-                             */
-
-                            if ("full".equals(tiffin) || "half".equals(tiffin)) {
-
-                                tiffinCollected++;
+                            if (!isAdded()) {
+                                return;
                             }
 
+                            members.clear();
 
-                            if (Boolean.TRUE.equals(dinner)) {
+                            for (
+                                    QueryDocumentSnapshot document :
+                                    memberSnapshot
+                            ) {
 
-                                dinnerCollected++;
+                                MemberInfo member =
+                                        new MemberInfo();
+
+                                member.documentId =
+                                        document.getId();
+
+                                member.name =
+                                        document.getString(
+                                                "name"
+                                        );
+
+                                Boolean lunch =
+                                        document.getBoolean(
+                                                "lunchEnabled"
+                                        );
+
+                                Boolean dinner =
+                                        document.getBoolean(
+                                                "dinnerEnabled"
+                                        );
+
+                                member.lunchEnabled =
+                                        Boolean.TRUE.equals(
+                                                lunch
+                                        );
+
+                                member.dinnerEnabled =
+                                        Boolean.TRUE.equals(
+                                                dinner
+                                        );
+
+                                members.add(
+                                        member
+                                );
                             }
+
+                            totalMembers =
+                                    members.size();
+
+                            txtTotalMembers.setText(
+                                    String.valueOf(
+                                            totalMembers
+                                    )
+                            );
+
+                            loadTodayTiffinRecords(
+                                    today
+                            );
                         }
-                    }
+                )
 
+                .addOnFailureListener(
+                        e -> {
 
-                    txtTiffinCollected.setText(String.valueOf(tiffinCollected));
+                            if (!isAdded()) {
+                                return;
+                            }
 
+                            members.clear();
 
-                    txtDinnerCollected.setText(String.valueOf(dinnerCollected));
+                            totalMembers = 0;
 
+                            txtTotalMembers.setText(
+                                    "0"
+                            );
 
-                    updatePendingCount();
-
-                    updateOverview();
-                })
-
-                .addOnFailureListener(e -> {
-
-                    txtTiffinCollected.setText("0");
-
-                    txtDinnerCollected.setText("0");
-
-                    txtPending.setText("0");
-
-                    txtOverview.setText("Unable to load today's collection.");
-                });
+                            loadTodayTiffinRecords(
+                                    today
+                            );
+                        }
+                );
     }
 
+    // =========================================================
+    // LOAD TODAY TIFFIN RECORDS
+    // =========================================================
+
+    private void loadTodayTiffinRecords(
+            String today) {
+
+        firestore
+                .collection("tiffin_records")
+                .whereEqualTo(
+                        "ownerId",
+                        ownerId
+                )
+                .whereEqualTo(
+                        "date",
+                        today
+                )
+                .get()
+
+                .addOnSuccessListener(
+                        querySnapshot -> {
+
+                            if (!isAdded()) {
+                                return;
+                            }
+
+                            todayRecords.clear();
+
+                            for (
+                                    QueryDocumentSnapshot document :
+                                    querySnapshot
+                            ) {
+
+                                String memberDocumentId =
+                                        document.getString(
+                                                "memberDocumentId"
+                                        );
+
+                                if (memberDocumentId == null ||
+                                        memberDocumentId
+                                                .trim()
+                                                .isEmpty()) {
+
+                                    continue;
+                                }
+
+                                String lunchStatus =
+                                        document.getString(
+                                                "lunchStatus"
+                                        );
+
+                                String dinnerStatus =
+                                        document.getString(
+                                                "dinnerStatus"
+                                        );
+
+                                TodayRecord record =
+                                        new TodayRecord();
+
+                                record.lunchStatus =
+                                        normalizeStatus(
+                                                lunchStatus
+                                        );
+
+                                record.dinnerStatus =
+                                        normalizeStatus(
+                                                dinnerStatus
+                                        );
+
+                                todayRecords.put(
+                                        memberDocumentId,
+                                        record
+                                );
+                            }
+
+                            calculateCollection();
+
+                        }
+                )
+
+                .addOnFailureListener(
+                        e -> {
+
+                            if (!isAdded()) {
+                                return;
+                            }
+
+                            todayRecords.clear();
+
+                            calculateCollection();
+                        }
+                );
+    }
+
+    // =========================================================
+    // CALCULATE COLLECTION
+    // =========================================================
+
+    private void calculateCollection() {
+
+        // =====================================================
+        // RESET
+        // =====================================================
+
+        tiffinCollected = 0;
+
+        dinnerCollected = 0;
+
+        lunchEligible = 0;
+
+        dinnerEligible = 0;
+
+        lunchPending = 0;
+
+        dinnerPending = 0;
+
+        // =====================================================
+        // CALCULATE FROM MEMBERS
+        // =====================================================
+
+        for (MemberInfo member : members) {
+
+            TodayRecord record =
+                    todayRecords.get(
+                            member.documentId
+                    );
+
+            String lunchStatus =
+                    "none";
+
+            String dinnerStatus =
+                    "none";
+
+            if (record != null) {
+
+                lunchStatus =
+                        normalizeStatus(
+                                record.lunchStatus
+                        );
+
+                dinnerStatus =
+                        normalizeStatus(
+                                record.dinnerStatus
+                        );
+            }
+
+            // =================================================
+            // LUNCH
+            // =================================================
+
+            if (member.lunchEnabled) {
+
+                lunchEligible++;
+
+                if (isCollected(
+                        lunchStatus
+                )) {
+
+                    tiffinCollected++;
+
+                } else {
+
+                    lunchPending++;
+                }
+            }
+
+            // =================================================
+            // DINNER
+            // =================================================
+
+            if (member.dinnerEnabled) {
+
+                dinnerEligible++;
+
+                if (isCollected(
+                        dinnerStatus
+                )) {
+
+                    dinnerCollected++;
+
+                } else {
+
+                    dinnerPending++;
+                }
+            }
+        }
+
+        // =====================================================
+        // UPDATE UI
+        // =====================================================
+
+        updateMealCards();
+
+        updateProgressBars();
+
+        updatePendingCount();
+
+        updateOverview();
+    }
+
+    // =========================================================
+    // UPDATE LUNCH / DINNER CARDS
+    // =========================================================
+
+    private void updateMealCards() {
+
+        /*
+         * Existing TextView IDs are kept unchanged.
+         *
+         * txtTiffinCollected now displays:
+         *
+         * Lunch collected / eligible
+         *
+         * Example:
+         * 8 / 10
+         */
+
+        txtTiffinCollected.setText(
+                tiffinCollected +
+                        " / " +
+                        lunchEligible
+        );
+
+        /*
+         * Dinner:
+         *
+         * 6 / 8
+         */
+
+        txtDinnerCollected.setText(
+                dinnerCollected +
+                        " / " +
+                        dinnerEligible
+        );
+    }
+
+    // =========================================================
+    // UPDATE ALL PROGRESS BARS
+    // =========================================================
+
+    private void updateProgressBars() {
+
+        // =====================================================
+        // LUNCH PROGRESS
+        // =====================================================
+
+        int lunchProgress = 0;
+
+        if (lunchEligible > 0) {
+
+            lunchProgress =
+                    Math.round(
+                            (tiffinCollected * 100f)
+                                    / lunchEligible
+                    );
+        }
+
+        progressLunch.setProgress(
+                lunchProgress
+        );
+
+        // =====================================================
+        // DINNER PROGRESS
+        // =====================================================
+
+        int dinnerProgress = 0;
+
+        if (dinnerEligible > 0) {
+
+            dinnerProgress =
+                    Math.round(
+                            (dinnerCollected * 100f)
+                                    / dinnerEligible
+                    );
+        }
+
+        progressDinner.setProgress(
+                dinnerProgress
+        );
+
+        // =====================================================
+        // MAIN TODAY'S PROGRESS
+        // =====================================================
+
+        int totalCollected =
+                tiffinCollected +
+                        dinnerCollected;
+
+        int totalEligible =
+                lunchEligible +
+                        dinnerEligible;
+
+        int todayProgress = 0;
+
+        if (totalEligible > 0) {
+
+            todayProgress =
+                    Math.round(
+                            (totalCollected * 100f)
+                                    / totalEligible
+                    );
+        }
+
+        progressToday.setProgress(
+                todayProgress
+        );
+    }
 
     // =========================================================
     // PENDING
@@ -310,15 +832,28 @@ public class OwnerDashboardFragment extends Fragment {
 
     private void updatePendingCount() {
 
-        int pending = totalMembers - tiffinCollected;
+        /*
+         * Pending means all eligible meals that have
+         * not yet been collected.
+         *
+         * Lunch pending + Dinner pending
+         */
+
+        int pending =
+                lunchPending +
+                        dinnerPending;
 
         if (pending < 0) {
+
             pending = 0;
         }
 
-        txtPending.setText(String.valueOf(pending));
+        txtPending.setText(
+                String.valueOf(
+                        pending
+                )
+        );
     }
-
 
     // =========================================================
     // OVERVIEW
@@ -326,17 +861,131 @@ public class OwnerDashboardFragment extends Fragment {
 
     private void updateOverview() {
 
+        int totalCollected =
+                tiffinCollected +
+                        dinnerCollected;
+
+        int totalEligible =
+                lunchEligible +
+                        dinnerEligible;
+
+        int totalPending =
+                lunchPending +
+                        dinnerPending;
+
+        // =====================================================
+        // CALCULATE PERCENTAGE
+        // =====================================================
+
+        int percentage = 0;
+
+        if (totalEligible > 0) {
+
+            percentage =
+                    Math.round(
+                            (totalCollected * 100f)
+                                    / totalEligible
+                    );
+        }
+
+        // =====================================================
+        // UPDATE "0 of 0"
+        // =====================================================
+
+        if (txtTodayProgress != null) {
+
+            txtTodayProgress.setText(
+                    totalCollected +
+                            " of " +
+                            totalEligible +
+                            " meals collected today"
+            );
+        }
+
+        // =====================================================
+        // UPDATE "0%"
+        // =====================================================
+
+        if (txtTodayPercentage != null) {
+
+            txtTodayPercentage.setText(
+                    percentage + "%"
+            );
+        }
+
+        // =====================================================
+        // EXISTING OVERVIEW TEXT
+        // =====================================================
+
         if (totalMembers == 0) {
 
-            txtOverview.setText("No members have been added yet.");
+            txtOverview.setText(
+                    "No members have been added yet."
+            );
 
             return;
         }
 
+        if (totalEligible == 0) {
 
-        txtOverview.setText(tiffinCollected + " of " + totalMembers + " members collected today's tiffin.");
+            txtOverview.setText(
+                    "No meals are scheduled for today."
+            );
+
+            return;
+        }
+
+        if (totalPending == 0) {
+
+            txtOverview.setText(
+                    "All scheduled meals have been collected today."
+            );
+
+            return;
+        }
+
+        txtOverview.setText(
+                totalCollected +
+                        " of " +
+                        totalEligible +
+                        " scheduled meals collected today."
+        );
+    }
+    // =========================================================
+    // CHECK COLLECTION
+    // =========================================================
+
+    private boolean isCollected(
+            String status) {
+
+        return "full".equalsIgnoreCase(
+                status
+        )
+                ||
+                "half".equalsIgnoreCase(
+                        status
+                );
     }
 
+    // =========================================================
+    // NORMALIZE STATUS
+    // =========================================================
+
+    private String normalizeStatus(
+            String status) {
+
+        if (status == null ||
+                status.trim().isEmpty()) {
+
+            return "none";
+        }
+
+        return status
+                .trim()
+                .toLowerCase(
+                        Locale.getDefault()
+                );
+    }
 
     // =========================================================
     // REFRESH WHEN RETURNING TO DASHBOARD
@@ -344,19 +993,54 @@ public class OwnerDashboardFragment extends Fragment {
 
     @Override
     public void onResume() {
+
         super.onResume();
 
         if (sessionManager == null) {
-            sessionManager = new SessionManager(requireContext());
+
+            sessionManager =
+                    new SessionManager(
+                            requireContext()
+                    );
         }
 
-        ownerId = sessionManager.getUid();
+        ownerId =
+                sessionManager.getUid();
 
-        if (ownerId != null && !ownerId.isEmpty()) {
+        if (ownerId != null &&
+                !ownerId.isEmpty()) {
+
+            setDate();
 
             loadOwnerProfile();
+
             loadMemberCount();
-            loadTodayCollection();
         }
+    }
+
+    // =========================================================
+    // MEMBER INFO
+    // =========================================================
+
+    private static class MemberInfo {
+
+        String documentId;
+
+        String name;
+
+        boolean lunchEnabled;
+
+        boolean dinnerEnabled;
+    }
+
+    // =========================================================
+    // TODAY RECORD
+    // =========================================================
+
+    private static class TodayRecord {
+
+        String lunchStatus;
+
+        String dinnerStatus;
     }
 }

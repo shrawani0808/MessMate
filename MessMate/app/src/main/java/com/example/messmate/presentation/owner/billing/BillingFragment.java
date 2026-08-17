@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
@@ -34,6 +33,8 @@ import androidx.fragment.app.Fragment;
 
 import com.example.messmate.R;
 import com.example.messmate.presentation.auth.SessionManager;
+import com.example.messmate.presentation.owner.members.model.Member;
+import com.example.messmate.presentation.owner.tiffin.modules.TiffinRecord;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -68,13 +69,7 @@ public class BillingFragment extends Fragment {
 
     private Calendar selectedMonth;
 
-    private double defaultTiffinRate = 50.0;
-
-    // =========================================================
-    // SEARCH DATA
-    // =========================================================
-
-    private final List<BillingMember> billingMembers = new ArrayList<>();
+    private final List<Member> billingMembers = new ArrayList<>();
 
     // =========================================================
     // COLORS
@@ -83,29 +78,25 @@ public class BillingFragment extends Fragment {
     private final int GREEN = Color.rgb(47, 132, 100);
     private final int LIGHT_GREEN = Color.rgb(235, 247, 241);
     private final int WHITE = Color.WHITE;
+
     private final int TEXT_PRIMARY = Color.rgb(35, 35, 35);
     private final int TEXT_SECONDARY = Color.rgb(125, 125, 125);
     private final int BORDER = Color.rgb(232, 236, 234);
 
-    // =========================================================
-    // CALENDAR POPUP COLORS
-    // =========================================================
+    private final int FULL_BG = Color.rgb(232, 247, 238);
+    private final int FULL_TEXT = Color.rgb(35, 120, 75);
 
-    private final int FULL_TIFFIN_BG = Color.rgb(232, 247, 238);
-    private final int FULL_TIFFIN_TEXT = Color.rgb(35, 120, 75);
+    private final int HALF_BG = Color.rgb(255, 239, 222);
+    private final int HALF_TEXT = Color.rgb(225, 105, 20);
 
-    private final int HALF_TIFFIN_BG = Color.rgb(255, 239, 222);
-    private final int HALF_TIFFIN_TEXT = Color.rgb(225, 105, 20);
-
-    private final int NOT_COLLECTED_BG = Color.rgb(255, 232, 232);
-    private final int NOT_COLLECTED_TEXT = Color.rgb(220, 55, 55);
+    private final int NOT_BG = Color.rgb(255, 232, 232);
+    private final int NOT_TEXT = Color.rgb(220, 55, 55);
 
     // =========================================================
     // CONSTRUCTOR
     // =========================================================
 
     public BillingFragment() {
-        // Required empty public constructor
     }
 
     // =========================================================
@@ -114,7 +105,10 @@ public class BillingFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
 
         return inflater.inflate(R.layout.fragment_billing, container, false);
     }
@@ -124,7 +118,9 @@ public class BillingFragment extends Fragment {
     // =========================================================
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(
+            @NonNull View view,
+            @Nullable Bundle savedInstanceState) {
 
         super.onViewCreated(view, savedInstanceState);
 
@@ -134,27 +130,29 @@ public class BillingFragment extends Fragment {
 
         selectedMonth = Calendar.getInstance();
 
-        tvBillingMonthSubtitle = view.findViewById(R.id.tvBillingMonthSubtitle);
+        tvBillingMonthSubtitle =
+                view.findViewById(R.id.tvBillingMonthSubtitle);
 
-        tvSelectedMonth = view.findViewById(R.id.tvSelectedMonth);
+        tvSelectedMonth =
+                view.findViewById(R.id.tvSelectedMonth);
 
-        btnPreviousMonth = view.findViewById(R.id.btnPreviousMonth);
+        btnPreviousMonth =
+                view.findViewById(R.id.btnPreviousMonth);
 
-        btnNextMonth = view.findViewById(R.id.btnNextMonth);
+        btnNextMonth =
+                view.findViewById(R.id.btnNextMonth);
 
-        memberContainer = view.findViewById(R.id.memberContainer);
+        memberContainer =
+                view.findViewById(R.id.memberContainer);
 
-        edtBillingSearch = view.findViewById(R.id.edtBillingSearch);
+        edtBillingSearch =
+                view.findViewById(R.id.edtBillingSearch);
 
         updateMonthText();
 
-        setupBillingSearch();
+        setupSearch();
 
-        loadOwnerDefaultRate();
-
-        // -----------------------------------------------------
-        // PREVIOUS MONTH
-        // -----------------------------------------------------
+        loadMembers();
 
         btnPreviousMonth.setOnClickListener(v -> {
 
@@ -164,10 +162,6 @@ public class BillingFragment extends Fragment {
 
             loadMembers();
         });
-
-        // -----------------------------------------------------
-        // NEXT MONTH
-        // -----------------------------------------------------
 
         btnNextMonth.setOnClickListener(v -> {
 
@@ -180,19 +174,48 @@ public class BillingFragment extends Fragment {
     }
 
     // =========================================================
-    // BILLING SEARCH
+    // UPDATE MONTH TEXT
     // =========================================================
 
-    private void setupBillingSearch() {
+    private void updateMonthText() {
+
+        String month =
+                new SimpleDateFormat(
+                        "MMMM yyyy",
+                        Locale.getDefault()
+                ).format(selectedMonth.getTime());
+
+        if (tvBillingMonthSubtitle != null) {
+            tvBillingMonthSubtitle.setText(month);
+        }
+
+        if (tvSelectedMonth != null) {
+            tvSelectedMonth.setText(month);
+        }
+    }
+
+    // =========================================================
+    // SEARCH
+    // =========================================================
+
+    private void setupSearch() {
 
         edtBillingSearch.addTextChangedListener(new TextWatcher() {
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public void beforeTextChanged(
+                    CharSequence s,
+                    int start,
+                    int count,
+                    int after) {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            public void onTextChanged(
+                    CharSequence s,
+                    int start,
+                    int before,
+                    int count) {
 
                 filterMembers(s.toString());
             }
@@ -204,147 +227,53 @@ public class BillingFragment extends Fragment {
     }
 
     // =========================================================
-    // FILTER MEMBERS
+    // FILTER
     // =========================================================
 
-    private void filterMembers(String searchText) {
+    private void filterMembers(String search) {
 
-        String query = searchText == null ? "" : searchText.trim().toLowerCase(Locale.getDefault());
+        String query = search == null
+                ? ""
+                : search.trim().toLowerCase(Locale.getDefault());
 
         memberContainer.removeAllViews();
 
+        int matches = 0;
+
+        for (Member member : billingMembers) {
+
+            String name = member.getName() == null
+                    ? ""
+                    : member.getName().toLowerCase(Locale.getDefault());
+
+            String email = member.getEmail() == null
+                    ? ""
+                    : member.getEmail().toLowerCase(Locale.getDefault());
+
+            if (query.isEmpty()
+                    || name.contains(query)
+                    || email.contains(query)) {
+
+                addMemberCard(member);
+
+                matches++;
+            }
+        }
+
         if (billingMembers.isEmpty()) {
 
-            showNoMembers();
+            showEmptyMessage(
+                    "No members found",
+                    "Add members first"
+            );
 
-            return;
+        } else if (matches == 0) {
+
+            showEmptyMessage(
+                    "No members found",
+                    "Try a different name or email"
+            );
         }
-
-        int matchingMembers = 0;
-
-        for (BillingMember member : billingMembers) {
-
-            String name = member.name == null ? "" : member.name.toLowerCase(Locale.getDefault());
-
-            String email = member.email == null ? "" : member.email.toLowerCase(Locale.getDefault());
-
-            if (query.isEmpty() || name.contains(query) || email.contains(query)) {
-
-                addMemberCard(member.memberId, member.name, member.email, member.memberRate);
-
-                matchingMembers++;
-            }
-        }
-
-        if (matchingMembers == 0) {
-
-            showNoSearchResults();
-        }
-    }
-
-    // =========================================================
-    // NO SEARCH RESULTS
-    // =========================================================
-
-    private void showNoSearchResults() {
-
-        LinearLayout emptyLayout = new LinearLayout(requireContext());
-
-        emptyLayout.setOrientation(LinearLayout.VERTICAL);
-
-        emptyLayout.setGravity(Gravity.CENTER);
-
-        emptyLayout.setPadding(dp(20), dp(60), dp(20), dp(20));
-
-        TextView title = new TextView(requireContext());
-
-        title.setText("No members found");
-
-        title.setTextSize(17);
-
-        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-
-        title.setTextColor(Color.BLACK);
-
-        title.setGravity(Gravity.CENTER);
-
-        TextView subtitle = new TextView(requireContext());
-
-        subtitle.setText("Try a different name or email");
-
-        subtitle.setTextSize(14);
-
-        subtitle.setTextColor(Color.GRAY);
-
-        subtitle.setGravity(Gravity.CENTER);
-
-        emptyLayout.addView(title);
-
-        LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        subtitleParams.setMargins(0, dp(5), 0, 0);
-
-        emptyLayout.addView(subtitle, subtitleParams);
-
-        memberContainer.addView(emptyLayout, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(250)));
-    }
-
-    // =========================================================
-    // MONTH
-    // =========================================================
-
-    private void updateMonthText() {
-
-        String month = new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(selectedMonth.getTime());
-
-        tvSelectedMonth.setText(month);
-
-        tvBillingMonthSubtitle.setText(month);
-    }
-
-    // =========================================================
-    // GET OWNER ID
-    // =========================================================
-
-    private String getOwnerId() {
-
-        if (sessionManager == null) {
-            return null;
-        }
-
-        return sessionManager.getUid();
-    }
-
-    // =========================================================
-    // LOAD OWNER DEFAULT RATE
-    // =========================================================
-
-    private void loadOwnerDefaultRate() {
-
-        String ownerId = getOwnerId();
-
-        if (ownerId == null || ownerId.isEmpty()) {
-
-            loadMembers();
-
-            return;
-        }
-
-        firestore.collection("owners").document(ownerId).get().addOnSuccessListener(documentSnapshot -> {
-
-            if (documentSnapshot.exists()) {
-
-                Double rate = documentSnapshot.getDouble("tiffinRate");
-
-                if (rate != null && rate > 0) {
-
-                    defaultTiffinRate = rate;
-                }
-            }
-
-            loadMembers();
-
-        }).addOnFailureListener(e -> loadMembers());
     }
 
     // =========================================================
@@ -361,7 +290,11 @@ public class BillingFragment extends Fragment {
 
         if (ownerId == null || ownerId.isEmpty()) {
 
-            Toast.makeText(requireContext(), "Owner session not found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    requireContext(),
+                    "Owner session not found",
+                    Toast.LENGTH_SHORT
+            ).show();
 
             return;
         }
@@ -370,1501 +303,2059 @@ public class BillingFragment extends Fragment {
 
         billingMembers.clear();
 
-        firestore.collection("members").whereEqualTo("ownerId", ownerId).get().addOnSuccessListener(queryDocumentSnapshots -> {
-
-            if (!isAdded()) {
-                return;
-            }
-
-            memberContainer.removeAllViews();
-
-            billingMembers.clear();
-
-            if (queryDocumentSnapshots.isEmpty()) {
-
-                showNoMembers();
-
-                return;
-            }
-
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-
-                String memberId = document.getId();
-
-                String name = document.getString("name");
-
-                String email = document.getString("email");
-
-                Double memberRate = document.getDouble("tiffinRate");
-
-                if (name == null || name.trim().isEmpty()) {
-
-                    name = "Member";
-                }
-
-                if (memberRate == null || memberRate <= 0) {
-
-                    memberRate = defaultTiffinRate;
-
-                    saveInitialMemberRate(memberId, memberRate);
-                }
-
-                billingMembers.add(new BillingMember(memberId, name, email, memberRate));
-            }
-
-            filterMembers(edtBillingSearch.getText().toString());
-
-        }).addOnFailureListener(e -> {
-
-            if (!isAdded()) {
-                return;
-            }
-
-            Toast.makeText(requireContext(), "Failed to load members: " + e.getMessage(), Toast.LENGTH_LONG).show();
-
-            showNoMembers();
-        });
-    }
-
-    // =========================================================
-    // SAVE INITIAL MEMBER RATE
-    // =========================================================
-
-    private void saveInitialMemberRate(String memberId, double rate) {
-
-        Map<String, Object> data = new HashMap<>();
-
-        data.put("tiffinRate", rate);
-
-        firestore.collection("members").document(memberId).set(data, SetOptions.merge());
-    }
-
-    // =========================================================
-    // NO MEMBERS
-    // =========================================================
-
-    private void showNoMembers() {
-
-        LinearLayout emptyLayout = new LinearLayout(requireContext());
-
-        emptyLayout.setOrientation(LinearLayout.VERTICAL);
-
-        emptyLayout.setGravity(Gravity.CENTER);
-
-        emptyLayout.setPadding(dp(20), dp(80), dp(20), dp(20));
-
-        TextView title = new TextView(requireContext());
-
-        title.setText("No members found");
-
-        title.setTextSize(17);
-
-        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-
-        title.setTextColor(Color.BLACK);
-
-        title.setGravity(Gravity.CENTER);
-
-        TextView subtitle = new TextView(requireContext());
-
-        subtitle.setText("Add members first");
-
-        subtitle.setTextSize(14);
-
-        subtitle.setTextColor(Color.GRAY);
-
-        subtitle.setGravity(Gravity.CENTER);
-
-        emptyLayout.addView(title);
-
-        LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        subtitleParams.setMargins(0, dp(5), 0, 0);
-
-        emptyLayout.addView(subtitle, subtitleParams);
-
-        memberContainer.addView(emptyLayout, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(300)));
-    }
-
-    // =========================================================
-    // DP HELPER
-    // =========================================================
-
-    private int dp(float value) {
-
-        return (int) (value * getResources().getDisplayMetrics().density);
-    }
-
-    // =========================================================
-    // GREEN BUTTON BACKGROUND
-    // =========================================================
-
-    private GradientDrawable createGreenButtonBackground() {
-
-        GradientDrawable background = new GradientDrawable();
-
-        background.setColor(GREEN);
-
-        background.setCornerRadius(dp(12));
-
-        return background;
-    }
-
-    // =========================================================
-    // LIGHT BUTTON BACKGROUND
-    // =========================================================
-
-    private GradientDrawable createLightButtonBackground() {
-
-        GradientDrawable background = new GradientDrawable();
-
-        background.setColor(LIGHT_GREEN);
-
-        background.setCornerRadius(dp(10));
-
-        background.setStroke(dp(1), Color.rgb(210, 235, 224));
-
-        return background;
+        firestore.collection("members")
+                .whereEqualTo("ownerId", ownerId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    if (!isAdded()) {
+                        return;
+                    }
+
+                    billingMembers.clear();
+
+                    for (QueryDocumentSnapshot document : snapshot) {
+
+                        Member member = document.toObject(Member.class);
+
+                        member.setDocumentId(document.getId());
+
+                        billingMembers.add(member);
+                    }
+
+                    filterMembers(
+                            edtBillingSearch.getText().toString()
+                    );
+                })
+                .addOnFailureListener(e -> {
+
+                    if (!isAdded()) {
+                        return;
+                    }
+
+                    Toast.makeText(
+                            requireContext(),
+                            "Failed to load members: "
+                                    + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                    showEmptyMessage(
+                            "Unable to load members",
+                            "Please try again"
+                    );
+                });
     }
 
     // =========================================================
     // MEMBER CARD
     // =========================================================
 
-    private void addMemberCard(String memberId, String name, String email, double memberRate) {
+    private void addMemberCard(Member member) {
 
-        LinearLayout card = new LinearLayout(requireContext());
+        View cardView = getLayoutInflater().inflate(
+                R.layout.item_billing_member,
+                memberContainer,
+                false
+        );
 
-        card.setOrientation(LinearLayout.VERTICAL);
+        TextView txtInitial =
+                cardView.findViewById(R.id.txtInitial);
 
-        card.setPadding(dp(16), dp(16), dp(16), dp(16));
+        TextView txtMemberName =
+                cardView.findViewById(R.id.txtMemberName);
 
-        GradientDrawable background = new GradientDrawable();
+        TextView txtMemberEmail =
+                cardView.findViewById(R.id.txtMemberEmail);
 
-        background.setColor(WHITE);
+        TextView txtMemberRate =
+                cardView.findViewById(R.id.txtMemberRate);
 
-        background.setCornerRadius(dp(18));
+        TextView txtTotalUnits =
+                cardView.findViewById(R.id.txtTotalUnits);
 
-        background.setStroke(dp(1), BORDER);
+        TextView txtTotalAmount =
+                cardView.findViewById(R.id.txtTotalAmount);
 
-        card.setBackground(background);
+        TextView txtFullTiffins =
+                cardView.findViewById(R.id.txtFullTiffins);
 
-        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        TextView txtHalfTiffins =
+                cardView.findViewById(R.id.txtHalfTiffins);
 
-        cardParams.setMargins(0, dp(6), 0, dp(6));
+        MaterialButton btnEditRate =
+                cardView.findViewById(R.id.btnEditRate);
 
-        memberContainer.addView(card, cardParams);
+        MaterialButton btnGenerateBill =
+                cardView.findViewById(R.id.btnGenerateBill);
 
-        card.setOnClickListener(v -> showMemberTiffinCalendar(memberId, name));
+        String name = member.getName();
 
-        LinearLayout header = new LinearLayout(requireContext());
+        if (name == null || name.trim().isEmpty()) {
+            name = "Member";
+        }
 
-        header.setOrientation(LinearLayout.HORIZONTAL);
+        txtInitial.setText(
+                name.substring(0, 1).toUpperCase(Locale.getDefault())
+        );
 
-        header.setGravity(Gravity.CENTER_VERTICAL);
+        txtMemberName.setText(name);
 
-        TextView initial = new TextView(requireContext());
+        String email = member.getEmail();
 
-        initial.setGravity(Gravity.CENTER);
+        if (email == null || email.trim().isEmpty()) {
 
-        initial.setTextSize(16);
-
-        initial.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-
-        initial.setTextColor(GREEN);
-
-        if (name != null && !name.trim().isEmpty()) {
-
-            initial.setText(name.substring(0, 1).toUpperCase());
+            txtMemberEmail.setVisibility(View.GONE);
 
         } else {
 
-            initial.setText("M");
+            txtMemberEmail.setVisibility(View.VISIBLE);
+
+            txtMemberEmail.setText(email);
         }
 
-        GradientDrawable initialBackground = new GradientDrawable();
+        updateBillingCard(
+                member,
+                txtMemberRate,
+                txtTotalUnits,
+                txtTotalAmount,
+                txtFullTiffins,
+                txtHalfTiffins
+        );
 
-        initialBackground.setShape(GradientDrawable.OVAL);
+        // -----------------------------------------------------
+        // EDIT BILLING CONFIGURATION
+        // -----------------------------------------------------
 
-        initialBackground.setColor(LIGHT_GREEN);
+        btnEditRate.setOnClickListener(v ->
+                showEditBillingDialog(
+                        member,
+                        txtMemberRate
+                )
+        );
 
-        initial.setBackground(initialBackground);
+        // -----------------------------------------------------
+        // CALCULATE BILL
+        // -----------------------------------------------------
 
-        LinearLayout.LayoutParams initialParams = new LinearLayout.LayoutParams(dp(54), dp(54));
+        btnGenerateBill.setOnClickListener(v ->
+                calculateMonthlyBill(member)
+        );
 
-        header.addView(initial, initialParams);
+        // -----------------------------------------------------
+        // OPEN TIFFIN CALENDAR
+        // -----------------------------------------------------
 
-        LinearLayout memberInfo = new LinearLayout(requireContext());
+        final String finalMemberName = name;
 
-        memberInfo.setOrientation(LinearLayout.VERTICAL);
+        cardView.setOnClickListener(v ->
+                showMemberTiffinCalendar(
+                        member.getDocumentId(),
+                        finalMemberName
+                )
+        );
 
-        LinearLayout.LayoutParams infoParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+        memberContainer.addView(cardView);
+    }
 
-        infoParams.setMargins(dp(12), 0, 0, 0);
+    // =========================================================
+    // UPDATE CARD
+    // =========================================================
 
-        TextView tvName = new TextView(requireContext());
+    private void updateBillingCard(
+            Member member,
+            TextView rateText,
+            TextView unitsText,
+            TextView amountText,
+            TextView fullText,
+            TextView halfText) {
 
-        tvName.setText(name);
+        String paymentType = normalizePaymentType(
+                member.getPaymentType()
+        );
 
-        tvName.setTextSize(17);
+        if ("monthly".equals(paymentType)) {
 
-        tvName.setTextColor(TEXT_PRIMARY);
+            rateText.setText("Monthly Package");
 
-        tvName.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            double packageAmount = 0;
 
-        tvName.setSingleLine(true);
+            if (member.isLunchEnabled()) {
+                packageAmount += member.getMonthlyLunchAmount();
+            }
 
-        tvName.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            if (member.isDinnerEnabled()) {
+                packageAmount += member.getMonthlyDinnerAmount();
+            }
 
-        memberInfo.addView(tvName);
+            amountText.setText(
+                    formatMoney(packageAmount)
+            );
 
-        if (email != null && !email.trim().isEmpty()) {
+            unitsText.setText("Package");
 
-            TextView tvEmail = new TextView(requireContext());
+        } else {
 
-            tvEmail.setText(email);
+            rateText.setText(
+                    "Full " + formatMoney(member.getFullRate())
+                            + " | Half "
+                            + formatMoney(member.getHalfRate())
+            );
 
-            tvEmail.setTextSize(12);
+            unitsText.setText("Daily");
 
-            tvEmail.setTextColor(TEXT_SECONDARY);
-
-            tvEmail.setSingleLine(true);
-
-            tvEmail.setEllipsize(android.text.TextUtils.TruncateAt.END);
-
-            LinearLayout.LayoutParams emailParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-            emailParams.setMargins(0, dp(2), 0, 0);
-
-            memberInfo.addView(tvEmail, emailParams);
+            amountText.setText("Calculated");
         }
 
-        header.addView(memberInfo, infoParams);
-
-        card.addView(header);
-
-        // =====================================================
-        // RATE ROW
-        // =====================================================
-
-        LinearLayout rateRow = new LinearLayout(requireContext());
-
-        rateRow.setOrientation(LinearLayout.HORIZONTAL);
-
-        rateRow.setGravity(Gravity.CENTER_VERTICAL);
-
-        LinearLayout.LayoutParams rateRowParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        rateRowParams.setMargins(0, dp(14), 0, dp(12));
-
-        LinearLayout rateInfo = new LinearLayout(requireContext());
-
-        rateInfo.setOrientation(LinearLayout.VERTICAL);
-
-        LinearLayout.LayoutParams rateInfoParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-
-        TextView rateLabel = new TextView(requireContext());
-
-        rateLabel.setText("Tiffin Rate");
-
-        rateLabel.setTextSize(11);
-
-        rateLabel.setTextColor(TEXT_SECONDARY);
-
-        TextView rateValue = new TextView(requireContext());
-
-        rateValue.setText(formatRate(memberRate));
-
-        rateValue.setTextSize(15);
-
-        rateValue.setTextColor(TEXT_PRIMARY);
-
-        rateValue.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-
-        LinearLayout.LayoutParams rateValueParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        rateValueParams.setMargins(0, dp(2), 0, 0);
-
-        rateInfo.addView(rateLabel);
-
-        rateInfo.addView(rateValue, rateValueParams);
-
-        rateRow.addView(rateInfo, rateInfoParams);
-
-        Button editRateButton = new Button(requireContext());
-
-        editRateButton.setText("Edit Rate");
-
-        editRateButton.setAllCaps(false);
-
-        editRateButton.setTextSize(12);
-
-        editRateButton.setTextColor(GREEN);
-
-        editRateButton.setGravity(Gravity.CENTER);
-
-        editRateButton.setMinWidth(0);
-
-        editRateButton.setMinimumWidth(0);
-
-        editRateButton.setMinHeight(0);
-
-        editRateButton.setMinimumHeight(0);
-
-        editRateButton.setPadding(dp(13), 0, dp(13), 0);
-
-        editRateButton.setBackground(createLightButtonBackground());
-
-        LinearLayout.LayoutParams editParams = new LinearLayout.LayoutParams(dp(92), dp(36));
-
-        editRateButton.setOnClickListener(v -> showEditMemberRateDialog(memberId, rateValue));
-
-        rateRow.addView(editRateButton, editParams);
-
-        card.addView(rateRow, rateRowParams);
-
-        View divider = new View(requireContext());
-
-        divider.setBackgroundColor(Color.rgb(240, 242, 241));
-
-        LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1));
-
-        dividerParams.setMargins(0, 0, 0, dp(12));
-
-        card.addView(divider, dividerParams);
-
-        // =====================================================
-        // CALCULATE MONTHLY BILL BUTTON
-        // =====================================================
-
-        Button calculateButton = new Button(requireContext());
-
-        calculateButton.setText("Calculate Monthly Bill");
-
-        calculateButton.setAllCaps(false);
-
-        calculateButton.setTextSize(13);
-
-        calculateButton.setTextColor(WHITE);
-
-        calculateButton.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-
-        calculateButton.setGravity(Gravity.CENTER);
-
-        calculateButton.setMinWidth(0);
-
-        calculateButton.setMinimumWidth(0);
-
-        calculateButton.setMinHeight(0);
-
-        calculateButton.setMinimumHeight(0);
-
-        calculateButton.setPadding(dp(12), 0, dp(12), 0);
-
-        calculateButton.setBackground(createGreenButtonBackground());
-
-        LinearLayout.LayoutParams calculateParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(44));
-
-        final String finalName = name;
-
-        final String finalEmail = email;
-
-        calculateButton.setOnClickListener(v -> calculateMonthlyBill(memberId, finalName, finalEmail));
-
-        card.addView(calculateButton, calculateParams);
+        loadCurrentMonthSummary(
+                member,
+                unitsText,
+                amountText,
+                fullText,
+                halfText
+        );
     }
 
     // =========================================================
-    // FORMAT RATE
+    // LOAD CURRENT MONTH SUMMARY
     // =========================================================
 
-    private String formatRate(double rate) {
+    private void loadCurrentMonthSummary(
+            Member member,
+            TextView unitsText,
+            TextView amountText,
+            TextView fullText,
+            TextView halfText) {
 
-        return String.format(Locale.getDefault(), "₹ %.2f / tiffin", rate);
-    }
+        String ownerId = getOwnerId();
 
-    // =========================================================
-    // EDIT MEMBER RATE
-    // =========================================================
+        if (ownerId == null
+                || ownerId.isEmpty()
+                || member.getDocumentId() == null) {
+            return;
+        }
 
-    private void showEditMemberRateDialog(String memberId, TextView rateValue) {
+        firestore.collection("tiffin_records")
+                .whereEqualTo("ownerId", ownerId)
+                .whereEqualTo(
+                        "memberDocumentId",
+                        member.getDocumentId()
+                )
+                .get()
+                .addOnSuccessListener(snapshot -> {
 
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_tiffin_rate, null);
+                    int full = 0;
+                    int half = 0;
 
-        EditText edtTiffinRate = dialogView.findViewById(R.id.edtTiffinRate);
+                    double units = 0;
 
-        MaterialButton btnCancelRate = dialogView.findViewById(R.id.btnCancelRate);
+                    double dailyAmount = 0;
 
-        MaterialButton btnSaveRate = dialogView.findViewById(R.id.btnSaveRate);
+                    for (QueryDocumentSnapshot document : snapshot) {
 
-        firestore.collection("members").document(memberId).get().addOnSuccessListener(documentSnapshot -> {
+                        TiffinRecord record =
+                                document.toObject(TiffinRecord.class);
 
-            Double currentRate = documentSnapshot.getDouble("tiffinRate");
+                        if (!isRecordInSelectedMonth(
+                                record.getDate())) {
+                            continue;
+                        }
 
-            if (currentRate != null) {
+                        MealSummary summary =
+                                calculateRecordAmount(
+                                        record,
+                                        member
+                                );
 
-                edtTiffinRate.setText(String.format(Locale.getDefault(), "%.2f", currentRate));
+                        full += summary.fullMeals;
 
-                edtTiffinRate.setSelection(edtTiffinRate.getText().length());
-            }
+                        half += summary.halfMeals;
 
-            AlertDialog dialog = new AlertDialog.Builder(requireContext()).setView(dialogView).create();
+                        units += summary.units;
 
-            if (dialog.getWindow() != null) {
+                        dailyAmount += summary.amount;
+                    }
 
-                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            }
+                    fullText.setText(
+                            String.valueOf(full)
+                    );
 
-            btnCancelRate.setOnClickListener(v -> dialog.dismiss());
+                    halfText.setText(
+                            String.valueOf(half)
+                    );
 
-            btnSaveRate.setOnClickListener(v -> {
+                    if ("monthly".equals(
+                            normalizePaymentType(
+                                    member.getPaymentType()))) {
 
-                String value = edtTiffinRate.getText().toString().trim();
+                        unitsText.setText(
+                                String.format(
+                                        Locale.getDefault(),
+                                        "%.1f collected",
+                                        units
+                                )
+                        );
 
-                if (value.isEmpty()) {
+                        double packageAmount =
+                                calculateMonthlyPackage(member);
 
-                    edtTiffinRate.setError("Enter rate");
+                        amountText.setText(
+                                formatMoney(packageAmount)
+                        );
 
-                    return;
-                }
+                    } else {
 
-                double newRate;
+                        unitsText.setText(
+                                String.format(
+                                        Locale.getDefault(),
+                                        "%.1f units",
+                                        units
+                                )
+                        );
 
-                try {
-
-                    newRate = Double.parseDouble(value);
-
-                } catch (NumberFormatException e) {
-
-                    edtTiffinRate.setError("Invalid rate");
-
-                    return;
-                }
-
-                if (newRate <= 0) {
-
-                    edtTiffinRate.setError("Rate must be greater than 0");
-
-                    return;
-                }
-
-                saveMemberRate(memberId, newRate, rateValue, dialog);
-            });
-
-            dialog.show();
-
-            if (dialog.getWindow() != null) {
-
-                dialog.getWindow().setLayout((int) (getResources().getDisplayMetrics().widthPixels * 0.88), ViewGroup.LayoutParams.WRAP_CONTENT);
-            }
-        }).addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to load member rate", Toast.LENGTH_SHORT).show());
-    }
-
-    // =========================================================
-    // SAVE MEMBER RATE
-    // =========================================================
-
-    private void saveMemberRate(String memberId, double newRate, TextView rateValue, AlertDialog dialog) {
-
-        Map<String, Object> data = new HashMap<>();
-
-        data.put("tiffinRate", newRate);
-
-        firestore.collection("members").document(memberId).set(data, SetOptions.merge()).addOnSuccessListener(unused -> {
-
-            rateValue.setText(formatRate(newRate));
-
-            // Keep local search data synchronized
-            for (BillingMember member : billingMembers) {
-
-                if (member.memberId.equals(memberId)) {
-
-                    member.memberRate = newRate;
-
-                    break;
-                }
-            }
-
-            Toast.makeText(requireContext(), "Tiffin rate updated", Toast.LENGTH_SHORT).show();
-
-            dialog.dismiss();
-        }).addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to update rate: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        amountText.setText(
+                                formatMoney(dailyAmount)
+                        );
+                    }
+                });
     }
 
     // =========================================================
     // CALCULATE MONTHLY BILL
     // =========================================================
 
-    private void calculateMonthlyBill(String memberId, String memberName, String email) {
+    private void calculateMonthlyBill(Member member) {
+
+        if (!isAdded()) {
+            return;
+        }
 
         String ownerId = getOwnerId();
 
         if (ownerId == null || ownerId.isEmpty()) {
 
-            Toast.makeText(requireContext(), "Owner session not found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    requireContext(),
+                    "Owner session not found",
+                    Toast.LENGTH_SHORT
+            ).show();
 
             return;
         }
 
-        firestore.collection("members").document(memberId).get().addOnSuccessListener(memberDocument -> {
+        firestore.collection("tiffin_records")
+                .whereEqualTo("ownerId", ownerId)
+                .whereEqualTo(
+                        "memberDocumentId",
+                        member.getDocumentId()
+                )
+                .get()
+                .addOnSuccessListener(snapshot -> {
 
-            Double memberRate = memberDocument.getDouble("tiffinRate");
+                    int fullMeals = 0;
+                    int halfMeals = 0;
 
-            if (memberRate == null || memberRate <= 0) {
+                    int lunchFull = 0;
+                    int lunchHalf = 0;
 
-                memberRate = defaultTiffinRate;
-            }
+                    int dinnerFull = 0;
+                    int dinnerHalf = 0;
 
-            calculateBillFromRecords(ownerId, memberId, memberName, email, memberRate);
-        }).addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to load member rate: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                    double totalUnits = 0;
+
+                    double dailyAmount = 0;
+
+                    for (QueryDocumentSnapshot document : snapshot) {
+
+                        TiffinRecord record =
+                                document.toObject(TiffinRecord.class);
+
+                        if (!isRecordInSelectedMonth(
+                                record.getDate())) {
+                            continue;
+                        }
+
+                        MealSummary summary =
+                                calculateRecordAmount(
+                                        record,
+                                        member
+                                );
+
+                        fullMeals += summary.fullMeals;
+
+                        halfMeals += summary.halfMeals;
+
+                        lunchFull += summary.lunchFull;
+
+                        lunchHalf += summary.lunchHalf;
+
+                        dinnerFull += summary.dinnerFull;
+
+                        dinnerHalf += summary.dinnerHalf;
+
+                        totalUnits += summary.units;
+
+                        dailyAmount += summary.amount;
+                    }
+
+                    double packageAmount =
+                            calculateMonthlyPackage(member);
+
+                    double finalAmount;
+
+                    if ("monthly".equals(
+                            normalizePaymentType(
+                                    member.getPaymentType()))) {
+
+                        finalAmount = packageAmount;
+
+                    } else {
+
+                        finalAmount = dailyAmount;
+                    }
+
+                    int daysInMonth =
+                            selectedMonth.getActualMaximum(
+                                    Calendar.DAY_OF_MONTH
+                            );
+
+                    showBillDialog(
+                            member,
+                            fullMeals,
+                            halfMeals,
+                            lunchFull,
+                            lunchHalf,
+                            dinnerFull,
+                            dinnerHalf,
+                            totalUnits,
+                            dailyAmount,
+                            packageAmount,
+                            finalAmount,
+                            daysInMonth
+                    );
+
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                requireContext(),
+                                "Failed to calculate bill: "
+                                        + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
+                );
     }
 
     // =========================================================
-    // CALCULATE FROM TIFFIN RECORDS
+    // RECORD CALCULATION
     // =========================================================
 
-    private void calculateBillFromRecords(String ownerId, String memberId, String memberName, String email, double memberRate) {
+    private MealSummary calculateRecordAmount(
+            TiffinRecord record,
+            Member member) {
 
-        Calendar start = (Calendar) selectedMonth.clone();
+        MealSummary result = new MealSummary();
 
-        start.set(Calendar.DAY_OF_MONTH, 1);
+        // -----------------------------------------------------
+        // LUNCH
+        // -----------------------------------------------------
 
-        start.set(Calendar.HOUR_OF_DAY, 0);
+        if (member.isLunchEnabled()) {
 
-        start.set(Calendar.MINUTE, 0);
+            String lunch =
+                    normalizeStatus(record.getLunchStatus());
 
-        start.set(Calendar.SECOND, 0);
+            if ("full".equals(lunch)) {
 
-        start.set(Calendar.MILLISECOND, 0);
+                result.fullMeals++;
+                result.lunchFull++;
+                result.units += 1;
 
-        Calendar end = (Calendar) start.clone();
+                if ("daily".equals(
+                        normalizePaymentType(
+                                member.getPaymentType()))) {
 
-        end.add(Calendar.MONTH, 1);
-
-        firestore.collection("tiffin_records").whereEqualTo("ownerId", ownerId).whereEqualTo("memberDocumentId", memberId).get().addOnSuccessListener(query -> {
-
-            double totalTiffins = 0;
-
-            int totalDays = 0;
-
-            int fullTiffins = 0;
-
-            int halfTiffins = 0;
-
-            for (QueryDocumentSnapshot document : query) {
-
-                String dateString = document.getString("date");
-
-                if (dateString == null || dateString.trim().isEmpty()) {
-
-                    continue;
+                    result.amount += member.getFullRate();
                 }
 
-                Date recordDate;
+            } else if ("half".equals(lunch)) {
 
-                try {
+                result.halfMeals++;
+                result.lunchHalf++;
+                result.units += 0.5;
 
-                    recordDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateString);
+                if ("daily".equals(
+                        normalizePaymentType(
+                                member.getPaymentType()))) {
 
-                } catch (Exception e) {
-
-                    continue;
-                }
-
-                if (recordDate == null) {
-                    continue;
-                }
-
-                Calendar recordCalendar = Calendar.getInstance();
-
-                recordCalendar.setTime(recordDate);
-
-                boolean sameMonth = recordCalendar.get(Calendar.YEAR) == selectedMonth.get(Calendar.YEAR) && recordCalendar.get(Calendar.MONTH) == selectedMonth.get(Calendar.MONTH);
-
-                if (!sameMonth) {
-                    continue;
-                }
-
-                String tiffin = document.getString("tiffin");
-
-                if ("full".equalsIgnoreCase(tiffin)) {
-
-                    fullTiffins++;
-
-                    totalTiffins += 1.0;
-
-                    totalDays++;
-
-                } else if ("half".equalsIgnoreCase(tiffin)) {
-
-                    halfTiffins++;
-
-                    totalTiffins += 0.5;
-
-                    totalDays++;
+                    result.amount += member.getHalfRate();
                 }
             }
+        }
 
-            double totalAmount = totalTiffins * memberRate;
+        // -----------------------------------------------------
+        // DINNER
+        // -----------------------------------------------------
 
-            showBillDialog(memberName, email, fullTiffins, halfTiffins, totalTiffins, totalDays, memberRate, totalAmount);
-        }).addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to calculate bill: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        if (member.isDinnerEnabled()) {
+
+            String dinner =
+                    normalizeStatus(record.getDinnerStatus());
+
+            if ("full".equals(dinner)) {
+
+                result.fullMeals++;
+                result.dinnerFull++;
+                result.units += 1;
+
+                if ("daily".equals(
+                        normalizePaymentType(
+                                member.getPaymentType()))) {
+
+                    result.amount += member.getFullRate();
+                }
+
+            } else if ("half".equals(dinner)) {
+
+                result.halfMeals++;
+                result.dinnerHalf++;
+                result.units += 0.5;
+
+                if ("daily".equals(
+                        normalizePaymentType(
+                                member.getPaymentType()))) {
+
+                    result.amount += member.getHalfRate();
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // =========================================================
+    // MONTHLY PACKAGE
+    // =========================================================
+
+    private double calculateMonthlyPackage(Member member) {
+
+        double amount = 0;
+
+        if (member.isLunchEnabled()) {
+
+            amount += member.getMonthlyLunchAmount();
+        }
+
+        if (member.isDinnerEnabled()) {
+
+            amount += member.getMonthlyDinnerAmount();
+        }
+
+        return amount;
     }
 
     // =========================================================
     // BILL DIALOG
     // =========================================================
 
-    private void showBillDialog(String memberName, String email, int fullTiffins, int halfTiffins, double totalTiffins, int totalDays, double memberRate, double totalAmount) {
+    private void showBillDialog(
+            Member member,
+            int fullMeals,
+            int halfMeals,
+            int lunchFull,
+            int lunchHalf,
+            int dinnerFull,
+            int dinnerHalf,
+            double totalUnits,
+            double dailyAmount,
+            double packageAmount,
+            double finalAmount,
+            int daysInMonth) {
 
-        if (!isAdded()) {
-            return;
-        }
+        View dialogView = getLayoutInflater().inflate(
+                R.layout.dialog_generate_bill,
+                null
+        );
 
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_generate_bill, null);
+        TextView tvBillTitle =
+                dialogView.findViewById(R.id.tvBillTitle);
 
-        TextView tvBillTitle = dialogView.findViewById(R.id.tvBillTitle);
+        TextView tvBillMember =
+                dialogView.findViewById(R.id.tvBillMember);
 
-        TextView tvBillMember = dialogView.findViewById(R.id.tvBillMember);
+        TextView tvBillMonth =
+                dialogView.findViewById(R.id.tvBillMonth);
 
-        TextView tvBillMonth = dialogView.findViewById(R.id.tvBillMonth);
+        TextView tvBillType =
+                dialogView.findViewById(R.id.tvBillType);
 
-        TextView tvBillRate = dialogView.findViewById(R.id.tvBillRate);
+        TextView tvBillConfiguration =
+                dialogView.findViewById(R.id.tvBillConfiguration);
 
-        TextView tvFullTiffins = dialogView.findViewById(R.id.tvFullTiffins);
+        TextView tvLunchSummary =
+                dialogView.findViewById(R.id.tvLunchSummary);
 
-        TextView tvHalfTiffins = dialogView.findViewById(R.id.tvHalfTiffins);
+        TextView tvDinnerSummary =
+                dialogView.findViewById(R.id.tvDinnerSummary);
 
-        TextView tvTiffinQuantity = dialogView.findViewById(R.id.tvTiffinQuantity);
+        TextView tvFullTiffins =
+                dialogView.findViewById(R.id.tvFullTiffins);
 
-        TextView tvCollectedDays = dialogView.findViewById(R.id.tvCollectedDays);
+        TextView tvHalfTiffins =
+                dialogView.findViewById(R.id.tvHalfTiffins);
 
-        TextView tvTotalBill = dialogView.findViewById(R.id.tvTotalBill);
+        TextView tvTiffinQuantity =
+                dialogView.findViewById(R.id.tvTiffinQuantity);
 
-        MaterialButton btnCloseBill = dialogView.findViewById(R.id.btnCloseBill);
+        TextView tvCollectedDays =
+                dialogView.findViewById(R.id.tvCollectedDays);
 
-        MaterialButton btnGeneratePdf = dialogView.findViewById(R.id.btnGeneratePdf);
+        TextView tvTotalBill =
+                dialogView.findViewById(R.id.tvTotalBill);
 
-        String month = new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(selectedMonth.getTime());
+        MaterialButton btnCloseBill =
+                dialogView.findViewById(R.id.btnCloseBill);
+
+        MaterialButton btnGeneratePdf =
+                dialogView.findViewById(R.id.btnGeneratePdf);
+
+        String month = new SimpleDateFormat(
+                "MMMM yyyy",
+                Locale.getDefault()
+        ).format(selectedMonth.getTime());
 
         tvBillTitle.setText("Monthly Bill");
 
-        tvBillMember.setText("Member: " + memberName);
+        tvBillMember.setText(
+                "Member: " + safeMemberName(member)
+        );
 
         tvBillMonth.setText(month);
 
-        tvBillRate.setText(String.format(Locale.getDefault(), "₹ %.2f", memberRate));
+        tvBillType.setText(
+                capitalize(
+                        normalizePaymentType(
+                                member.getPaymentType()
+                        )
+                )
+        );
 
-        tvFullTiffins.setText(String.valueOf(fullTiffins));
+        tvBillConfiguration.setText(
+                getMealConfigurationText(member)
+        );
 
-        tvHalfTiffins.setText(String.valueOf(halfTiffins));
+        tvLunchSummary.setText(
+                "Full: " + lunchFull
+                        + "   Half: " + lunchHalf
+        );
 
-        tvTiffinQuantity.setText(String.format(Locale.getDefault(), "%.1f", totalTiffins));
+        tvDinnerSummary.setText(
+                "Full: " + dinnerFull
+                        + "   Half: " + dinnerHalf
+        );
 
-        tvCollectedDays.setText(String.valueOf(totalDays));
+        tvFullTiffins.setText(
+                String.valueOf(fullMeals)
+        );
 
-        tvTotalBill.setText(String.format(Locale.getDefault(), "₹ %.2f", totalAmount));
+        tvHalfTiffins.setText(
+                String.valueOf(halfMeals)
+        );
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext()).setView(dialogView).create();
+        tvTiffinQuantity.setText(
+                String.format(
+                        Locale.getDefault(),
+                        "%.1f",
+                        totalUnits
+                )
+        );
+
+        tvCollectedDays.setText(
+                String.valueOf(
+                        calculateCollectedDays(
+                                member
+                        )
+                )
+        );
+
+        tvTotalBill.setText(
+                formatMoney(finalAmount)
+        );
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(requireContext())
+                        .setView(dialogView)
+                        .create();
 
         if (dialog.getWindow() != null) {
 
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.TRANSPARENT)
+            );
         }
 
-        btnCloseBill.setOnClickListener(v -> dialog.dismiss());
+        btnCloseBill.setOnClickListener(
+                v -> dialog.dismiss()
+        );
 
-        btnGeneratePdf.setOnClickListener(v -> generatePdf(memberName, email, month, fullTiffins, halfTiffins, totalTiffins, totalDays, memberRate, totalAmount));
+        btnGeneratePdf.setOnClickListener(v ->
+                generatePdf(
+                        member,
+                        month,
+                        fullMeals,
+                        halfMeals,
+                        lunchFull,
+                        lunchHalf,
+                        dinnerFull,
+                        dinnerHalf,
+                        totalUnits,
+                        dailyAmount,
+                        packageAmount,
+                        finalAmount,
+                        daysInMonth
+                )
+        );
 
         dialog.show();
 
         if (dialog.getWindow() != null) {
 
-            dialog.getWindow().setLayout((int) (getResources().getDisplayMetrics().widthPixels * 0.88), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog.getWindow().setLayout(
+                    (int) (
+                            getResources()
+                                    .getDisplayMetrics()
+                                    .widthPixels * 0.90
+                    ),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
         }
     }
 
     // =========================================================
-    // GENERATE PDF - MESSMATE PROFESSIONAL FORMAT
+    // EDIT BILLING CONFIGURATION
     // =========================================================
 
-    private void generatePdf(String memberName, String email, String month, int fullTiffins, int halfTiffins, double totalTiffins, int totalDays, double memberRate, double totalAmount) {
+    private void showEditBillingDialog(
+            Member member,
+            TextView cardRateText) {
 
-        PdfDocument pdfDocument = new PdfDocument();
+        View dialogView = getLayoutInflater().inflate(
+                R.layout.dialog_edit_member_billing,
+                null
+        );
 
-        final int PAGE_WIDTH = 595;
+        TextView tvDialogType =
+                dialogView.findViewById(R.id.tvDialogType);
 
-        final int PAGE_HEIGHT = 842;
+        EditText edtFullRate =
+                dialogView.findViewById(R.id.edtFullRate);
 
-        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(PAGE_WIDTH, PAGE_HEIGHT, 1).create();
+        EditText edtHalfRate =
+                dialogView.findViewById(R.id.edtHalfRate);
 
-        PdfDocument.Page page = pdfDocument.startPage(pageInfo);
+        EditText edtMonthlyLunch =
+                dialogView.findViewById(R.id.edtMonthlyLunch);
 
-        android.graphics.Canvas canvas = page.getCanvas();
+        EditText edtMonthlyDinner =
+                dialogView.findViewById(R.id.edtMonthlyDinner);
 
-        android.graphics.Paint paint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+        MaterialButton btnCancel =
+                dialogView.findViewById(R.id.btnCancelBilling);
 
-        // =====================================================
-        // COLORS
-        // =====================================================
+        MaterialButton btnSave =
+                dialogView.findViewById(R.id.btnSaveBilling);
 
-        final int GREEN = Color.rgb(35, 120, 82);
+        String paymentType =
+                normalizePaymentType(
+                        member.getPaymentType()
+                );
 
-        final int LIGHT_GREEN = Color.rgb(239, 248, 243);
+        tvDialogType.setText(
+                "Payment Type: "
+                        + capitalize(paymentType)
+        );
 
-        final int PALE_GREEN = Color.rgb(248, 252, 249);
+        edtFullRate.setText(
+                formatNumber(member.getFullRate())
+        );
 
-        final int BORDER = Color.rgb(205, 222, 214);
+        edtHalfRate.setText(
+                formatNumber(member.getHalfRate())
+        );
 
-        final int TEXT = Color.rgb(35, 35, 35);
+        edtMonthlyLunch.setText(
+                formatNumber(
+                        member.getMonthlyLunchAmount()
+                )
+        );
 
-        final int GREY = Color.rgb(95, 95, 95);
+        edtMonthlyDinner.setText(
+                formatNumber(
+                        member.getMonthlyDinnerAmount()
+                )
+        );
 
-        final int ORANGE = Color.rgb(232, 126, 18);
+        boolean daily =
+                "daily".equals(paymentType);
 
-        final int RED = Color.rgb(195, 45, 45);
+        edtFullRate.setEnabled(daily);
+        edtHalfRate.setEnabled(daily);
 
-        final int FULL_BG = Color.rgb(230, 244, 235);
+        edtMonthlyLunch.setEnabled(!daily);
+        edtMonthlyDinner.setEnabled(!daily);
 
-        final int HALF_BG = Color.rgb(255, 239, 218);
+        AlertDialog dialog =
+                new AlertDialog.Builder(requireContext())
+                        .setView(dialogView)
+                        .create();
 
-        final int NOT_BG = Color.rgb(255, 231, 231);
+        dialog.setOnShowListener(d -> {
 
-        // =====================================================
-        // OUTER BORDER
-        // =====================================================
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(
+                        new ColorDrawable(Color.WHITE)
+                );
+            }
+        });
 
-        paint.setStyle(android.graphics.Paint.Style.STROKE);
+        btnCancel.setOnClickListener(
+                v -> dialog.dismiss()
+        );
 
+        btnSave.setOnClickListener(v -> {
+
+            if (daily) {
+
+                Double fullRate =
+                        parsePositive(
+                                edtFullRate,
+                                "Enter full meal rate"
+                        );
+
+                Double halfRate =
+                        parsePositive(
+                                edtHalfRate,
+                                "Enter half meal rate"
+                        );
+
+                if (fullRate == null
+                        || halfRate == null) {
+                    return;
+                }
+
+                saveDailyConfiguration(
+                        member,
+                        fullRate,
+                        halfRate,
+                        cardRateText,
+                        dialog
+                );
+
+            } else {
+
+                Double lunchAmount =
+                        parseNonNegative(
+                                edtMonthlyLunch,
+                                "Enter lunch package amount"
+                        );
+
+                Double dinnerAmount =
+                        parseNonNegative(
+                                edtMonthlyDinner,
+                                "Enter dinner package amount"
+                        );
+
+                if (lunchAmount == null
+                        || dinnerAmount == null) {
+                    return;
+                }
+
+                saveMonthlyConfiguration(
+                        member,
+                        lunchAmount,
+                        dinnerAmount,
+                        cardRateText,
+                        dialog
+                );
+            }
+        });
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+
+            dialog.getWindow().setLayout(
+                    (int) (
+                            getResources()
+                                    .getDisplayMetrics()
+                                    .widthPixels * 0.90
+                    ),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
+    }
+
+    // =========================================================
+    // SAVE DAILY CONFIG
+    // =========================================================
+
+    private void saveDailyConfiguration(
+            Member member,
+            double fullRate,
+            double halfRate,
+            TextView cardRateText,
+            AlertDialog dialog) {
+
+        Map<String, Object> data = new HashMap<>();
+
+        data.put("fullRate", fullRate);
+        data.put("halfRate", halfRate);
+
+        firestore.collection("members")
+                .document(member.getDocumentId())
+                .set(data, SetOptions.merge())
+                .addOnSuccessListener(unused -> {
+
+                    member.setFullRate(fullRate);
+                    member.setHalfRate(halfRate);
+
+                    cardRateText.setText(
+                            "Full "
+                                    + formatMoney(fullRate)
+                                    + " • Half "
+                                    + formatMoney(halfRate)
+                    );
+
+                    Toast.makeText(
+                            requireContext(),
+                            "Daily rates updated",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    dialog.dismiss();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                requireContext(),
+                                "Failed to update rates: "
+                                        + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
+                );
+    }
+
+    // =========================================================
+    // SAVE MONTHLY CONFIG
+    // =========================================================
+
+    private void saveMonthlyConfiguration(
+            Member member,
+            double lunchAmount,
+            double dinnerAmount,
+            TextView cardRateText,
+            AlertDialog dialog) {
+
+        Map<String, Object> data = new HashMap<>();
+
+        data.put(
+                "monthlyLunchAmount",
+                lunchAmount
+        );
+
+        data.put(
+                "monthlyDinnerAmount",
+                dinnerAmount
+        );
+
+        firestore.collection("members")
+                .document(member.getDocumentId())
+                .set(data, SetOptions.merge())
+                .addOnSuccessListener(unused -> {
+
+                    member.setMonthlyLunchAmount(
+                            lunchAmount
+                    );
+
+                    member.setMonthlyDinnerAmount(
+                            dinnerAmount
+                    );
+
+                    cardRateText.setText(
+                            "Monthly Package"
+                    );
+
+                    Toast.makeText(
+                            requireContext(),
+                            "Monthly package updated",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    dialog.dismiss();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                requireContext(),
+                                "Failed to update package: "
+                                        + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
+                );
+    }
+
+    // =========================================================
+    // PDF
+    // =========================================================
+
+    private void generatePdf(
+            Member member,
+            String month,
+            int fullMeals,
+            int halfMeals,
+            int lunchFull,
+            int lunchHalf,
+            int dinnerFull,
+            int dinnerHalf,
+            double totalUnits,
+            double dailyAmount,
+            double packageAmount,
+            double finalAmount,
+            int daysInMonth) {
+
+        PdfDocument pdf = new PdfDocument();
+
+        final int width = 595;
+        final int height = 842;
+
+        PdfDocument.PageInfo info =
+                new PdfDocument.PageInfo.Builder(
+                        width,
+                        height,
+                        1
+                ).create();
+
+        PdfDocument.Page page =
+                pdf.startPage(info);
+
+        Canvas canvas = page.getCanvas();
+
+        Paint paint =
+                new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        final int GREEN =
+                Color.rgb(35, 120, 82);
+
+        final int LIGHT_GREEN =
+                Color.rgb(239, 248, 243);
+
+        final int BORDER =
+                Color.rgb(205, 222, 214);
+
+        final int TEXT =
+                Color.rgb(35, 35, 35);
+
+        final int GREY =
+                Color.rgb(95, 95, 95);
+
+        // -----------------------------------------------------
+        // BORDER
+        // -----------------------------------------------------
+
+        paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(1.2f);
-
         paint.setColor(Color.rgb(225, 225, 225));
 
-        canvas.drawRoundRect(12, 12, PAGE_WIDTH - 12, PAGE_HEIGHT - 12, 12, 12, paint);
+        canvas.drawRoundRect(
+                12,
+                12,
+                width - 12,
+                height - 12,
+                12,
+                12,
+                paint
+        );
 
-        paint.setStyle(android.graphics.Paint.Style.FILL);
+        paint.setStyle(Paint.Style.FILL);
 
-        // =====================================================
+        // -----------------------------------------------------
         // HEADER
-        // =====================================================
+        // -----------------------------------------------------
 
-        drawPdfText(canvas, paint, "MONTHLY BILL", 50, 58, 27, GREEN, true);
+        drawPdfText(
+                canvas,
+                paint,
+                "MONTHLY BILL",
+                45,
+                58,
+                27,
+                GREEN,
+                true
+        );
 
-        String billId = "INV-" + new SimpleDateFormat("yyyyMM", Locale.getDefault()).format(new Date()) + "-" + String.format(Locale.getDefault(), "%04d", Math.abs((memberName + month).hashCode()) % 10000);
+        String billId =
+                "INV-"
+                        + new SimpleDateFormat(
+                        "yyyyMM",
+                        Locale.getDefault()
+                ).format(new Date())
+                        + "-"
+                        + String.format(
+                        Locale.getDefault(),
+                        "%04d",
+                        Math.abs(
+                                safeMemberName(member)
+                                        .hashCode()
+                        ) % 10000
+                );
 
-        String generatedDate = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(new Date());
+        drawPdfTextRight(
+                canvas,
+                paint,
+                "Bill ID: " + billId,
+                550,
+                47,
+                9.5f,
+                TEXT,
+                true
+        );
 
-        drawPdfTextRight(canvas, paint, "Bill ID: " + billId, 545, 47, 9.5f, TEXT, true);
+        drawPdfTextRight(
+                canvas,
+                paint,
+                "Date: "
+                        + new SimpleDateFormat(
+                        "dd MMMM yyyy",
+                        Locale.getDefault()
+                ).format(new Date()),
+                550,
+                66,
+                9.5f,
+                TEXT,
+                false
+        );
 
-        drawPdfTextRight(canvas, paint, "Date: " + generatedDate, 545, 66, 9.5f, TEXT, false);
-
-        // =====================================================
-        // MONTH PILL
-        // =====================================================
+        // -----------------------------------------------------
+        // MONTH
+        // -----------------------------------------------------
 
         paint.setColor(LIGHT_GREEN);
 
-        canvas.drawRoundRect(207, 79, 388, 111, 18, 18, paint);
+        canvas.drawRoundRect(
+                205,
+                80,
+                390,
+                112,
+                18,
+                18,
+                paint
+        );
 
-        drawPdfText(canvas, paint, "▣", 229, 101, 16, GREEN, false);
-
-        drawPdfText(canvas, paint, month, 257, 101, 12, GREEN, true);
-
-        // =====================================================
-        // GREEN DIVIDER
-        // =====================================================
+        drawPdfTextCenter(
+                canvas,
+                paint,
+                month,
+                width / 2f,
+                101,
+                12,
+                GREEN,
+                true
+        );
 
         paint.setColor(GREEN);
 
-        canvas.drawRect(30, 126, PAGE_WIDTH - 30, 127.5f, paint);
+        canvas.drawRect(
+                30,
+                127,
+                width - 30,
+                128.5f,
+                paint
+        );
 
-        // =====================================================
-        // MEMBER DETAILS
-        // =====================================================
+        // -----------------------------------------------------
+        // MEMBER CARD
+        // -----------------------------------------------------
 
-        drawPdfCard(canvas, paint, 30, 147, PAGE_WIDTH - 30, 240, Color.WHITE, BORDER);
+        drawPdfCard(
+                canvas,
+                paint,
+                30,
+                148,
+                width - 30,
+                245,
+                Color.WHITE,
+                BORDER
+        );
 
         paint.setColor(LIGHT_GREEN);
 
-        canvas.drawCircle(80, 192, 31, paint);
+        canvas.drawCircle(
+                80,
+                193,
+                31,
+                paint
+        );
 
-        String initial = "M";
+        String initial =
+                safeMemberName(member)
+                        .substring(0, 1)
+                        .toUpperCase(Locale.getDefault());
 
-        if (memberName != null && !memberName.trim().isEmpty()) {
+        drawPdfTextCenter(
+                canvas,
+                paint,
+                initial,
+                80,
+                201,
+                25,
+                GREEN,
+                true
+        );
 
-            initial = memberName.substring(0, 1).toUpperCase(Locale.getDefault());
+        drawPdfText(
+                canvas,
+                paint,
+                safeMemberName(member),
+                135,
+                190,
+                15,
+                TEXT,
+                true
+        );
+
+        drawPdfText(
+                canvas,
+                paint,
+                member.getEmail() == null
+                        ? ""
+                        : member.getEmail(),
+                135,
+                211,
+                10.5f,
+                GREY,
+                false
+        );
+
+        drawPdfText(
+                canvas,
+                paint,
+                "Payment: "
+                        + capitalize(
+                        normalizePaymentType(
+                                member.getPaymentType()
+                        )
+                ),
+                135,
+                230,
+                10,
+                GREEN,
+                true
+        );
+
+        // -----------------------------------------------------
+        // SUMMARY CARD
+        // -----------------------------------------------------
+
+        drawPdfCard(
+                canvas,
+                paint,
+                30,
+                260,
+                width - 30,
+                535,
+                Color.WHITE,
+                BORDER
+        );
+
+        drawPdfText(
+                canvas,
+                paint,
+                "BILL SUMMARY",
+                47,
+                288,
+                13,
+                GREEN,
+                true
+        );
+
+        int y = 320;
+
+        drawPdfSummaryRow(
+                canvas,
+                paint,
+                "Payment Type",
+                capitalize(
+                        normalizePaymentType(
+                                member.getPaymentType()
+                        )
+                ),
+                y
+        );
+
+        y += 28;
+
+        drawPdfSummaryRow(
+                canvas,
+                paint,
+                "Lunch",
+                member.isLunchEnabled()
+                        ? "Enabled"
+                        : "Disabled",
+                y
+        );
+
+        y += 28;
+
+        drawPdfSummaryRow(
+                canvas,
+                paint,
+                "Dinner",
+                member.isDinnerEnabled()
+                        ? "Enabled"
+                        : "Disabled",
+                y
+        );
+
+        y += 28;
+
+        drawPdfSummaryRow(
+                canvas,
+                paint,
+                "Full Meals Collected",
+                String.valueOf(fullMeals),
+                y
+        );
+
+        y += 28;
+
+        drawPdfSummaryRow(
+                canvas,
+                paint,
+                "Half Meals Collected",
+                String.valueOf(halfMeals),
+                y
+        );
+
+        y += 28;
+
+        drawPdfSummaryRow(
+                canvas,
+                paint,
+                "Meal Units",
+                String.format(
+                        Locale.getDefault(),
+                        "%.1f",
+                        totalUnits
+                ),
+                y
+        );
+
+        y += 28;
+
+        drawPdfSummaryRow(
+                canvas,
+                paint,
+                "Lunch Full / Half",
+                lunchFull + " / " + lunchHalf,
+                y
+        );
+
+        y += 28;
+
+        drawPdfSummaryRow(
+                canvas,
+                paint,
+                "Dinner Full / Half",
+                dinnerFull + " / " + dinnerHalf,
+                y
+        );
+
+        y += 28;
+
+        if ("monthly".equals(
+                normalizePaymentType(
+                        member.getPaymentType()
+                ))) {
+
+            drawPdfSummaryRow(
+                    canvas,
+                    paint,
+                    "Lunch Package",
+                    member.isLunchEnabled()
+                            ? formatMoney(
+                            member.getMonthlyLunchAmount()
+                    )
+                            : "₹ 0.00",
+                    y
+            );
+
+            y += 28;
+
+            drawPdfSummaryRow(
+                    canvas,
+                    paint,
+                    "Dinner Package",
+                    member.isDinnerEnabled()
+                            ? formatMoney(
+                            member.getMonthlyDinnerAmount()
+                    )
+                            : "₹ 0.00",
+                    y
+            );
+
+        } else {
+
+            drawPdfSummaryRow(
+                    canvas,
+                    paint,
+                    "Full Rate",
+                    formatMoney(
+                            member.getFullRate()
+                    ),
+                    y
+            );
+
+            y += 28;
+
+            drawPdfSummaryRow(
+                    canvas,
+                    paint,
+                    "Half Rate",
+                    formatMoney(
+                            member.getHalfRate()
+                    ),
+                    y
+            );
         }
 
-        drawPdfTextCenter(canvas, paint, initial, 80, 201, 25, GREEN, true);
+        // -----------------------------------------------------
+        // TOTAL
+        // -----------------------------------------------------
 
-        paint.setColor(BORDER);
-
-        canvas.drawRect(123, 165, 124, 219, paint);
-
-        drawPdfText(canvas, paint, memberName == null ? "Member" : memberName, 143, 190, 15, TEXT, true);
-
-        if (email != null && !email.trim().isEmpty()) {
-
-            drawPdfText(canvas, paint, email, 143, 211, 10.5f, TEXT, false);
-        }
-
-        // =====================================================
-        // BILL SUMMARY CARD
-        // =====================================================
-
-        drawPdfCard(canvas, paint, 30, 255, PAGE_WIDTH - 30, 505, Color.WHITE, BORDER);
-
-        drawPdfText(canvas, paint, "▤", 46, 283, 19, GREEN, true);
-
-        drawPdfText(canvas, paint, "BILL SUMMARY", 75, 283, 13, GREEN, true);
-
-        drawPdfText(canvas, paint, "(" + month.toUpperCase(Locale.getDefault()) + ")", 183, 283, 8.5f, GREY, false);
-
-        int rowY = 310;
-
-        drawPdfSummaryRow(canvas, paint, "Tiffin Rate (per tiffin)", String.format(Locale.getDefault(), "₹ %.2f", memberRate), rowY, TEXT, true);
-
-        rowY += 29;
-
-        drawPdfSummaryRow(canvas, paint, "Tiffin Quantity", String.format(Locale.getDefault(), "%.1f", totalTiffins), rowY, TEXT, false);
-
-        rowY += 29;
-
-        int daysInMonth = selectedMonth.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-        drawPdfSummaryRow(canvas, paint, "Total Days in Month", String.valueOf(daysInMonth), rowY, TEXT, false);
-
-        rowY += 29;
-
-        drawPdfSummaryRow(canvas, paint, "Full Tiffins", String.valueOf(fullTiffins), rowY, GREEN, true);
-
-        rowY += 29;
-
-        drawPdfSummaryRow(canvas, paint, "Half Tiffins", String.valueOf(halfTiffins), rowY, ORANGE, true);
-
-        rowY += 29;
-
-        int notCollected = Math.max(0, daysInMonth - fullTiffins - halfTiffins);
-
-        drawPdfSummaryRow(canvas, paint, "Not Collected", String.valueOf(notCollected), rowY, RED, true);
-
-        // =====================================================
-        // DASHED SEPARATOR
-        // =====================================================
-
-        paint.setColor(Color.rgb(155, 195, 176));
-
-        paint.setStrokeWidth(1);
+        paint.setColor(
+                Color.rgb(155, 195, 176)
+        );
 
         for (int x = 47; x < 548; x += 7) {
 
-            canvas.drawRect(x, 474, Math.min(x + 4, 548), 475, paint);
+            canvas.drawRect(
+                    x,
+                    650,
+                    Math.min(x + 4, 548),
+                    651,
+                    paint
+            );
         }
 
-        // =====================================================
-        // TOTAL BILL
-        // =====================================================
+        drawPdfText(
+                canvas,
+                paint,
+                "TOTAL BILL",
+                47,
+                680,
+                15,
+                GREEN,
+                true
+        );
 
-        drawPdfText(canvas, paint, "TOTAL BILL", 47, 492, 14, GREEN, true);
+        drawPdfTextRight(
+                canvas,
+                paint,
+                formatMoney(finalAmount),
+                548,
+                680,
+                20,
+                GREEN,
+                true
+        );
 
-        drawPdfTextRight(canvas, paint, String.format(Locale.getDefault(), "₹ %.2f", totalAmount), 548, 492, 19, GREEN, true);
-
-        // =====================================================
+        // -----------------------------------------------------
         // COLLECTION SUMMARY
-        // =====================================================
+        // -----------------------------------------------------
 
-        drawPdfCard(canvas, paint, 30, 519, PAGE_WIDTH - 30, 646, PALE_GREEN, BORDER);
+        drawPdfCard(
+                canvas,
+                paint,
+                30,
+                705,
+                width - 30,
+                760,
+                LIGHT_GREEN,
+                BORDER
+        );
 
-        drawPdfText(canvas, paint, "▣", 46, 547, 17, GREEN, true);
+        drawPdfText(
+                canvas,
+                paint,
+                "Generated by MessMate",
+                47,
+                735,
+                10,
+                GREY,
+                false
+        );
 
-        drawPdfText(canvas, paint, "COLLECTION SUMMARY", 75, 547, 12, GREEN, true);
+        drawPdfTextRight(
+                canvas,
+                paint,
+                daysInMonth
+                        + " days in "
+                        + month,
+                548,
+                735,
+                10,
+                GREY,
+                false
+        );
 
-        drawPdfText(canvas, paint, "(" + month.toUpperCase(Locale.getDefault()) + ")", 213, 547, 8.5f, GREY, false);
+        pdf.finishPage(page);
 
-        int fullPercent = Math.round((fullTiffins * 100f) / Math.max(1, daysInMonth));
+        // -----------------------------------------------------
+        // FILE
+        // -----------------------------------------------------
 
-        int halfPercent = Math.round((halfTiffins * 100f) / Math.max(1, daysInMonth));
+        String safeName =
+                safeMemberName(member)
+                        .replaceAll(
+                                "[^a-zA-Z0-9_-]",
+                                "_"
+                        );
 
-        int notPercent = Math.round((notCollected * 100f) / Math.max(1, daysInMonth));
+        String safeMonth =
+                month.replaceAll(
+                        "[^a-zA-Z0-9_-]",
+                        "_"
+                );
 
-        paint.setColor(BORDER);
-
-        canvas.drawRect(196, 567, 197, 628, paint);
-
-        canvas.drawRect(396, 567, 397, 628, paint);
-
-        // =====================================================
-        // FULL TIFFINS
-        // =====================================================
-
-        paint.setColor(FULL_BG);
-
-        canvas.drawCircle(130, 585, 19, paint);
-
-        drawPdfTextCenter(canvas, paint, String.valueOf(fullTiffins), 130, 592, 15, GREEN, true);
-
-        drawPdfTextCenter(canvas, paint, "Full Tiffins", 130, 616, 10, GREEN, true);
-
-        drawPdfTextCenter(canvas, paint, "(" + fullPercent + "%)", 130, 634, 8.5f, GREY, false);
-
-        // =====================================================
-        // HALF TIFFINS
-        // =====================================================
-
-        paint.setColor(HALF_BG);
-
-        canvas.drawCircle(296, 585, 19, paint);
-
-        drawPdfTextCenter(canvas, paint, String.valueOf(halfTiffins), 296, 592, 15, ORANGE, true);
-
-        drawPdfTextCenter(canvas, paint, "Half Tiffins", 296, 616, 10, ORANGE, true);
-
-        drawPdfTextCenter(canvas, paint, "(" + halfPercent + "%)", 296, 634, 8.5f, GREY, false);
-
-        // =====================================================
-        // NOT COLLECTED
-        // =====================================================
-
-        paint.setColor(NOT_BG);
-
-        canvas.drawCircle(462, 585, 19, paint);
-
-        drawPdfTextCenter(canvas, paint, String.valueOf(notCollected), 462, 592, 15, RED, true);
-
-        drawPdfTextCenter(canvas, paint, "Not Collected", 462, 616, 10, RED, true);
-
-        drawPdfTextCenter(canvas, paint, "(" + notPercent + "%)", 462, 634, 8.5f, GREY, false);
-
-        // =====================================================
-        // THANK YOU CARD
-        // =====================================================
-
-        drawPdfCard(canvas, paint, 30, 660, PAGE_WIDTH - 30, 733, PALE_GREEN, BORDER);
-
-        paint.setColor(GREEN);
-
-        canvas.drawCircle(75, 696, 24, paint);
-
-        drawPdfTextCenter(canvas, paint, "▤", 75, 704, 21, Color.WHITE, true);
-
-        drawPdfText(canvas, paint, "Thank You!", 110, 689, 14, GREEN, true);
-
-        drawPdfText(canvas, paint, "Thank you for choosing our tiffin service.", 110, 708, 9.5f, TEXT, false);
-
-        drawPdfText(canvas, paint, "We appreciate your trust and support.", 110, 724, 9.5f, TEXT, false);
-
-        // =====================================================
-        // FOOTER
-        // =====================================================
-
-        drawPdfTextCenter(canvas, paint, "Generated by MessMate", PAGE_WIDTH / 2f, 770, 9, GREY, false);
-
-        // =====================================================
-        // FINISH PAGE
-        // =====================================================
-
-        pdfDocument.finishPage(page);
-
-        // =====================================================
-        // FILE NAME
-        // =====================================================
-
-        String safeName = memberName == null ? "Member" : memberName.replaceAll("[^a-zA-Z0-9_-]", "_");
-
-        String safeMonth = month.replaceAll("[^a-zA-Z0-9_-]", "_");
-
-        String fileName = "MessMate_" + safeName + "_" + safeMonth + ".pdf";
-
-        // =====================================================
-        // SAVE PDF
-        // =====================================================
+        String fileName =
+                "MessMate_"
+                        + safeName
+                        + "_"
+                        + safeMonth
+                        + ".pdf";
 
         try {
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT
+                    >= Build.VERSION_CODES.Q) {
 
-                ContentValues values = new ContentValues();
+                ContentValues values =
+                        new ContentValues();
 
-                values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+                values.put(
+                        MediaStore.Downloads.DISPLAY_NAME,
+                        fileName
+                );
 
-                values.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
+                values.put(
+                        MediaStore.Downloads.MIME_TYPE,
+                        "application/pdf"
+                );
 
-                values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                values.put(
+                        MediaStore.Downloads.RELATIVE_PATH,
+                        Environment.DIRECTORY_DOWNLOADS
+                );
 
-                android.net.Uri uri = requireContext().getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                android.net.Uri uri =
+                        requireContext()
+                                .getContentResolver()
+                                .insert(
+                                        MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                                        values
+                                );
 
                 if (uri == null) {
 
-                    Toast.makeText(requireContext(), "Could not create PDF", Toast.LENGTH_LONG).show();
+                    pdf.close();
 
-                    pdfDocument.close();
+                    Toast.makeText(
+                            requireContext(),
+                            "Could not create PDF",
+                            Toast.LENGTH_LONG
+                    ).show();
 
                     return;
                 }
 
-                OutputStream outputStream = requireContext().getContentResolver().openOutputStream(uri);
+                OutputStream outputStream =
+                        requireContext()
+                                .getContentResolver()
+                                .openOutputStream(uri);
 
                 if (outputStream != null) {
 
-                    pdfDocument.writeTo(outputStream);
+                    pdf.writeTo(outputStream);
 
                     outputStream.close();
                 }
 
             } else {
 
-                File downloadsDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                File directory =
+                        Environment.getExternalStoragePublicDirectory(
+                                Environment.DIRECTORY_DOWNLOADS
+                        );
 
-                if (!downloadsDirectory.exists()) {
-
-                    downloadsDirectory.mkdirs();
+                if (!directory.exists()) {
+                    directory.mkdirs();
                 }
 
-                File pdfFile = new File(downloadsDirectory, fileName);
+                File file =
+                        new File(
+                                directory,
+                                fileName
+                        );
 
-                OutputStream outputStream = new FileOutputStream(pdfFile);
+                OutputStream outputStream =
+                        new FileOutputStream(file);
 
-                pdfDocument.writeTo(outputStream);
+                pdf.writeTo(outputStream);
 
                 outputStream.close();
             }
 
-            pdfDocument.close();
+            pdf.close();
 
-            Toast.makeText(requireContext(), "Bill PDF saved in Downloads", Toast.LENGTH_LONG).show();
+            Toast.makeText(
+                    requireContext(),
+                    "Bill PDF saved in Downloads",
+                    Toast.LENGTH_LONG
+            ).show();
 
         } catch (Exception e) {
 
-            pdfDocument.close();
+            pdf.close();
 
-            Toast.makeText(requireContext(), "PDF error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(
+                    requireContext(),
+                    "PDF error: "
+                            + e.getMessage(),
+                    Toast.LENGTH_LONG
+            ).show();
         }
     }
 
     // =========================================================
-    // PDF CARD
+    // TIFFIN CALENDAR
     // =========================================================
 
-    private void drawPdfCard(android.graphics.Canvas canvas, android.graphics.Paint paint, float left, float top, float right, float bottom, int fillColor, int borderColor) {
-
-        paint.setStyle(android.graphics.Paint.Style.FILL);
-
-        paint.setColor(fillColor);
-
-        canvas.drawRoundRect(left, top, right, bottom, 10, 10, paint);
-
-        paint.setStyle(android.graphics.Paint.Style.STROKE);
-
-        paint.setStrokeWidth(0.8f);
-
-        paint.setColor(borderColor);
-
-        canvas.drawRoundRect(left, top, right, bottom, 10, 10, paint);
-
-        paint.setStyle(android.graphics.Paint.Style.FILL);
-    }
-
-    // =========================================================
-    // PDF SUMMARY ROW
-    // =========================================================
-
-    private void drawPdfSummaryRow(android.graphics.Canvas canvas, android.graphics.Paint paint, String label, String value, float y, int valueColor, boolean boldValue) {
-
-        drawPdfText(canvas, paint, label, 47, y, 10.5f, Color.rgb(35, 35, 35), false);
-
-        drawPdfTextRight(canvas, paint, value, 548, y, 10.5f, valueColor, boldValue);
-
-        paint.setColor(Color.rgb(235, 238, 236));
-
-        paint.setStrokeWidth(0.7f);
-
-        canvas.drawRect(47, y + 13, 548, y + 14, paint);
-    }
-
-    // =========================================================
-    // PDF TEXT
-    // =========================================================
-
-    private void drawPdfText(android.graphics.Canvas canvas, android.graphics.Paint paint, String text, float x, float y, float size, int color, boolean bold) {
-
-        paint.setStyle(android.graphics.Paint.Style.FILL);
-
-        paint.setColor(color);
-
-        paint.setTextSize(size);
-
-        paint.setTextAlign(android.graphics.Paint.Align.LEFT);
-
-        paint.setTypeface(Typeface.create("sans", bold ? Typeface.BOLD : Typeface.NORMAL));
-
-        canvas.drawText(text == null ? "" : text, x, y, paint);
-    }
-
-    // =========================================================
-    // PDF TEXT RIGHT
-    // =========================================================
-
-    private void drawPdfTextRight(android.graphics.Canvas canvas, android.graphics.Paint paint, String text, float x, float y, float size, int color, boolean bold) {
-
-        paint.setStyle(android.graphics.Paint.Style.FILL);
-
-        paint.setColor(color);
-
-        paint.setTextSize(size);
-
-        paint.setTextAlign(android.graphics.Paint.Align.RIGHT);
-
-        paint.setTypeface(Typeface.create("sans", bold ? Typeface.BOLD : Typeface.NORMAL));
-
-        canvas.drawText(text == null ? "" : text, x, y, paint);
-    }
-
-    // =========================================================
-    // PDF TEXT CENTER
-    // =========================================================
-
-    private void drawPdfTextCenter(android.graphics.Canvas canvas, android.graphics.Paint paint, String text, float x, float y, float size, int color, boolean bold) {
-
-        paint.setStyle(android.graphics.Paint.Style.FILL);
-
-        paint.setColor(color);
-
-        paint.setTextSize(size);
-
-        paint.setTextAlign(android.graphics.Paint.Align.CENTER);
-
-        paint.setTypeface(Typeface.create("sans", bold ? Typeface.BOLD : Typeface.NORMAL));
-
-        canvas.drawText(text == null ? "" : text, x, y, paint);
-    }
-
-    // =========================================================
-    // PDF SUMMARY ROW
-    // =========================================================
-
-    private void drawPdfSummaryRow(Canvas canvas, Paint paint, String label, String value, float y, int labelColor, int valueColor) {
-
-        paint.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
-
-        paint.setTextSize(10.5f);
-
-        paint.setTextAlign(Paint.Align.LEFT);
-
-        paint.setColor(labelColor);
-
-        canvas.drawText(label, 48, y, paint);
-
-        paint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
-
-        paint.setTextAlign(Paint.Align.RIGHT);
-
-        paint.setColor(valueColor);
-
-        canvas.drawText(value, 550, y, paint);
-    }
-
-    // =========================================================
-    // PDF DIVIDER
-    // =========================================================
-
-    private void drawPdfDivider(Canvas canvas, float y, float right) {
-
-        Paint dividerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-        dividerPaint.setColor(Color.rgb(232, 236, 234));
-
-        dividerPaint.setStrokeWidth(1);
-
-        canvas.drawLine(48, y, right, y, dividerPaint);
-    }
-
-    // =========================================================
-    // COLLECTION SUMMARY CIRCLE
-    // =========================================================
-
-    private void drawCollectionCircle(Canvas canvas, float x, float y, String value, int backgroundColor, int textColor) {
-
-        Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-        circlePaint.setStyle(Paint.Style.FILL);
-
-        circlePaint.setColor(backgroundColor);
-
-        canvas.drawCircle(x, y, 18, circlePaint);
-
-        circlePaint.setStyle(Paint.Style.STROKE);
-
-        circlePaint.setStrokeWidth(1);
-
-        circlePaint.setColor(textColor);
-
-        circlePaint.setAlpha(80);
-
-        canvas.drawCircle(x, y, 18, circlePaint);
-
-        circlePaint.setStyle(Paint.Style.FILL);
-
-        circlePaint.setAlpha(255);
-
-        circlePaint.setColor(textColor);
-
-        circlePaint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
-
-        circlePaint.setTextSize(13);
-
-        circlePaint.setTextAlign(Paint.Align.CENTER);
-
-        canvas.drawText(value, x, y + 5, circlePaint);
-    }
-
-    // =========================================================
-    // MEMBER TIFFIN CALENDAR POPUP
-    // =========================================================
-
-    private void showMemberTiffinCalendar(String memberId, String memberName) {
+    private void showMemberTiffinCalendar(
+            String memberId,
+            String memberName) {
 
         if (!isAdded()) {
             return;
         }
 
-        Calendar popupMonth = (Calendar) selectedMonth.clone();
+        Calendar popupMonth =
+                (Calendar) selectedMonth.clone();
 
-        popupMonth.set(Calendar.DAY_OF_MONTH, 1);
+        popupMonth.set(
+                Calendar.DAY_OF_MONTH,
+                1
+        );
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext()).create();
+        AlertDialog dialog =
+                new AlertDialog.Builder(
+                        requireContext()
+                ).create();
 
-        LinearLayout root = new LinearLayout(requireContext());
+        dialog.setOnShowListener(d -> {
 
-        root.setOrientation(LinearLayout.VERTICAL);
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(
+                        new ColorDrawable(Color.WHITE)
+                );
+            }
+        });
 
-        root.setPadding(dp(14), dp(12), dp(14), dp(12));
+        LinearLayout root =
+                new LinearLayout(requireContext());
 
-        TextView title = new TextView(requireContext());
+        root.setOrientation(
+                LinearLayout.VERTICAL
+        );
 
-        title.setText(memberName + " - Tiffin Calendar");
+        root.setPadding(
+                dp(14),
+                dp(12),
+                dp(14),
+                dp(12)
+        );
+
+        TextView title =
+                new TextView(requireContext());
+
+        title.setText(
+                memberName
+                        + " - Tiffin Calendar"
+        );
 
         title.setTextSize(18);
 
         title.setTextColor(GREEN);
 
-        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        title.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
 
         title.setGravity(Gravity.CENTER);
 
-        root.addView(title, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(45)));
+        root.addView(
+                title,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(45)
+                )
+        );
 
-        LinearLayout monthRow = new LinearLayout(requireContext());
+        LinearLayout monthRow =
+                new LinearLayout(requireContext());
 
-        monthRow.setOrientation(LinearLayout.HORIZONTAL);
+        monthRow.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
 
-        monthRow.setGravity(Gravity.CENTER_VERTICAL);
+        monthRow.setGravity(
+                Gravity.CENTER_VERTICAL
+        );
 
-        ImageButton previous = new ImageButton(requireContext());
+        ImageButton previous =
+                new ImageButton(requireContext());
 
-        previous.setImageResource(R.drawable.ic_arrow_left);
+        previous.setImageResource(
+                R.drawable.ic_arrow_left
+        );
 
-        previous.setBackgroundColor(Color.TRANSPARENT);
+        previous.setBackgroundColor(
+                Color.TRANSPARENT
+        );
 
         previous.setColorFilter(GREEN);
 
-        TextView monthText = new TextView(requireContext());
+        TextView monthText =
+                new TextView(requireContext());
 
         monthText.setTextSize(16);
 
-        monthText.setTextColor(TEXT_PRIMARY);
+        monthText.setTextColor(
+                TEXT_PRIMARY
+        );
 
-        monthText.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        monthText.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
 
         monthText.setGravity(Gravity.CENTER);
 
-        ImageButton next = new ImageButton(requireContext());
+        ImageButton next =
+                new ImageButton(requireContext());
 
-        next.setImageResource(R.drawable.ic_arrow_right);
+        next.setImageResource(
+                R.drawable.ic_arrow_right
+        );
 
-        next.setBackgroundColor(Color.TRANSPARENT);
+        next.setBackgroundColor(
+                Color.TRANSPARENT
+        );
 
         next.setColorFilter(GREEN);
 
-        monthRow.addView(previous, new LinearLayout.LayoutParams(dp(45), dp(45)));
+        monthRow.addView(
+                previous,
+                new LinearLayout.LayoutParams(
+                        dp(45),
+                        dp(45)
+                )
+        );
 
-        monthRow.addView(monthText, new LinearLayout.LayoutParams(0, dp(45), 1));
+        monthRow.addView(
+                monthText,
+                new LinearLayout.LayoutParams(
+                        0,
+                        dp(45),
+                        1
+                )
+        );
 
-        monthRow.addView(next, new LinearLayout.LayoutParams(dp(45), dp(45)));
+        monthRow.addView(
+                next,
+                new LinearLayout.LayoutParams(
+                        dp(45),
+                        dp(45)
+                )
+        );
 
         root.addView(monthRow);
 
-        LinearLayout popupCalendar = new LinearLayout(requireContext());
+        LinearLayout calendar =
+                new LinearLayout(requireContext());
 
-        popupCalendar.setOrientation(LinearLayout.VERTICAL);
+        calendar.setOrientation(
+                LinearLayout.VERTICAL
+        );
 
-        root.addView(popupCalendar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        root.addView(calendar);
 
-        LinearLayout legend = new LinearLayout(requireContext());
+        LinearLayout legend =
+                new LinearLayout(requireContext());
 
-        legend.setOrientation(LinearLayout.HORIZONTAL);
+        legend.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
 
         legend.setGravity(Gravity.CENTER);
 
-        LinearLayout.LayoutParams legendParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(42));
+        addLegendItem(
+                legend,
+                FULL_BG,
+                FULL_TEXT,
+                "Full"
+        );
 
-        legendParams.setMargins(0, dp(8), 0, dp(4));
+        addLegendItem(
+                legend,
+                HALF_BG,
+                HALF_TEXT,
+                "Half"
+        );
 
-        addLegendItem(legend, FULL_TIFFIN_BG, FULL_TIFFIN_TEXT, "Full");
+        addLegendItem(
+                legend,
+                NOT_BG,
+                NOT_TEXT,
+                "Not Collected"
+        );
 
-        addLegendItem(legend, HALF_TIFFIN_BG, HALF_TIFFIN_TEXT, "Half");
+        root.addView(
+                legend,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(42)
+                )
+        );
 
-        addLegendItem(legend, NOT_COLLECTED_BG, NOT_COLLECTED_TEXT, "Not Collected");
+        Button close =
+                new Button(requireContext());
 
-        root.addView(legend, legendParams);
+        close.setText("Close");
 
-        Button closeButton = new Button(requireContext());
+        close.setAllCaps(false);
 
-        closeButton.setText("Close");
+        close.setTextColor(GREEN);
+        close.setBackgroundColor(
+                Color.rgb(225, 225, 225)
+        );
+        close.setOnClickListener(
+                v -> dialog.dismiss()
+        );
 
-        closeButton.setAllCaps(false);
-
-        closeButton.setTextColor(GREEN);
-
-        closeButton.setOnClickListener(v -> dialog.dismiss());
-
-        root.addView(closeButton, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(45)));
+        root.addView(
+                close,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(45)
+                )
+        );
 
         dialog.setView(root);
 
-        loadMemberCalendarData(memberId, popupMonth, monthText, popupCalendar);
+        loadMemberCalendarData(
+                memberId,
+                popupMonth,
+                monthText,
+                calendar
+        );
 
         previous.setOnClickListener(v -> {
 
-            popupMonth.add(Calendar.MONTH, -1);
+            popupMonth.add(
+                    Calendar.MONTH,
+                    -1
+            );
 
-            loadMemberCalendarData(memberId, popupMonth, monthText, popupCalendar);
+            loadMemberCalendarData(
+                    memberId,
+                    popupMonth,
+                    monthText,
+                    calendar
+            );
         });
 
         next.setOnClickListener(v -> {
 
-            popupMonth.add(Calendar.MONTH, 1);
+            popupMonth.add(
+                    Calendar.MONTH,
+                    1
+            );
 
-            loadMemberCalendarData(memberId, popupMonth, monthText, popupCalendar);
+            loadMemberCalendarData(
+                    memberId,
+                    popupMonth,
+                    monthText,
+                    calendar
+            );
         });
 
         dialog.show();
 
         if (dialog.getWindow() != null) {
 
-            dialog.getWindow().setLayout((int) (getResources().getDisplayMetrics().widthPixels * 0.94), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog.getWindow().setLayout(
+                    (int) (
+                            getResources()
+                                    .getDisplayMetrics()
+                                    .widthPixels * 0.94
+                    ),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
         }
     }
 
     // =========================================================
-    // LOAD MEMBER CALENDAR DATA
+    // CALENDAR DATA
     // =========================================================
 
-    private void loadMemberCalendarData(String memberId, Calendar month, TextView monthText, LinearLayout calendarContainer) {
-
-        if (!isAdded()) {
-            return;
-        }
+    private void loadMemberCalendarData(
+            String memberId,
+            Calendar month,
+            TextView monthText,
+            LinearLayout container) {
 
         String ownerId = getOwnerId();
 
-        if (ownerId == null || ownerId.isEmpty()) {
+        if (ownerId == null
+                || ownerId.isEmpty()) {
             return;
         }
 
-        monthText.setText(new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(month.getTime()));
+        monthText.setText(
+                new SimpleDateFormat(
+                        "MMMM yyyy",
+                        Locale.getDefault()
+                ).format(month.getTime())
+        );
 
-        firestore.collection("tiffin_records").whereEqualTo("ownerId", ownerId).whereEqualTo("memberDocumentId", memberId).get().addOnSuccessListener(query -> {
+        firestore.collection("tiffin_records")
+                .whereEqualTo("ownerId", ownerId)
+                .whereEqualTo(
+                        "memberDocumentId",
+                        memberId
+                )
+                .get()
+                .addOnSuccessListener(snapshot -> {
 
-            if (!isAdded()) {
-                return;
-            }
+                    Map<String, TiffinRecord> records =
+                            new HashMap<>();
 
-            Map<String, String> tiffinStatus = new HashMap<>();
+                    for (QueryDocumentSnapshot document
+                            : snapshot) {
 
-            for (QueryDocumentSnapshot document : query) {
+                        TiffinRecord record =
+                                document.toObject(
+                                        TiffinRecord.class
+                                );
 
-                String date = document.getString("date");
+                        if (record.getDate() != null) {
 
-                String tiffin = document.getString("tiffin");
+                            records.put(
+                                    record.getDate(),
+                                    record
+                            );
+                        }
+                    }
 
-                if (date == null || date.trim().isEmpty()) {
-
-                    continue;
-                }
-
-                if (tiffin == null) {
-
-                    tiffin = "";
-                }
-
-                tiffinStatus.put(date, tiffin);
-            }
-
-            buildMemberPopupCalendar(month, tiffinStatus, calendarContainer);
-        }).addOnFailureListener(e -> {
-
-            if (!isAdded()) {
-                return;
-            }
-
-            Toast.makeText(requireContext(), "Failed to load tiffin records", Toast.LENGTH_SHORT).show();
-
-            buildMemberPopupCalendar(month, new HashMap<>(), calendarContainer);
-        });
+                    buildCalendar(
+                            month,
+                            records,
+                            container
+                    );
+                })
+                .addOnFailureListener(e ->
+                        buildCalendar(
+                                month,
+                                new HashMap<>(),
+                                container
+                        )
+                );
     }
 
     // =========================================================
-    // BUILD MEMBER POPUP CALENDAR
+    // BUILD CALENDAR
     // =========================================================
 
-    private void buildMemberPopupCalendar(Calendar month, Map<String, String> tiffinStatus, LinearLayout calendarContainer) {
+    private void buildCalendar(
+            Calendar month,
+            Map<String, TiffinRecord> records,
+            LinearLayout container) {
 
-        calendarContainer.removeAllViews();
+        container.removeAllViews();
 
-        LinearLayout dayHeader = new LinearLayout(requireContext());
+        LinearLayout header =
+                new LinearLayout(requireContext());
 
-        dayHeader.setOrientation(LinearLayout.HORIZONTAL);
+        header.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
 
-        dayHeader.setGravity(Gravity.CENTER);
-
-        String[] days = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+        String[] days = {
+                "Sun",
+                "Mon",
+                "Tue",
+                "Wed",
+                "Thu",
+                "Fri",
+                "Sat"
+        };
 
         for (String day : days) {
 
-            TextView dayText = new TextView(requireContext());
+            TextView text =
+                    createCalendarText();
 
-            dayText.setText(day);
+            text.setText(day);
 
-            dayText.setTextSize(11);
+            text.setTextSize(11);
 
-            dayText.setTextColor(TEXT_SECONDARY);
+            text.setTextColor(
+                    TEXT_SECONDARY
+            );
 
-            dayText.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-
-            dayText.setGravity(Gravity.CENTER);
-
-            dayHeader.addView(dayText, new LinearLayout.LayoutParams(0, dp(30), 1));
+            header.addView(
+                    text,
+                    new LinearLayout.LayoutParams(
+                            0,
+                            dp(30),
+                            1
+                    )
+            );
         }
 
-        calendarContainer.addView(dayHeader);
+        container.addView(header);
 
-        Calendar firstDay = (Calendar) month.clone();
+        Calendar first =
+                (Calendar) month.clone();
 
-        firstDay.set(Calendar.DAY_OF_MONTH, 1);
+        first.set(
+                Calendar.DAY_OF_MONTH,
+                1
+        );
 
-        int firstDayOfWeek = firstDay.get(Calendar.DAY_OF_WEEK) - 1;
+        int firstDay =
+                first.get(Calendar.DAY_OF_WEEK) - 1;
 
-        int daysInMonth = month.getActualMaximum(Calendar.DAY_OF_MONTH);
+        int daysInMonth =
+                month.getActualMaximum(
+                        Calendar.DAY_OF_MONTH
+                );
 
-        Calendar previousMonth = (Calendar) month.clone();
+        int totalCells =
+                firstDay + daysInMonth;
 
-        previousMonth.add(Calendar.MONTH, -1);
-
-        int previousMonthDays = previousMonth.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-        int totalCells = firstDayOfWeek + daysInMonth;
-
-        int rows = (int) Math.ceil(totalCells / 7.0);
+        int rows =
+                (int) Math.ceil(
+                        totalCells / 7.0
+                );
 
         if (rows < 5) {
             rows = 5;
@@ -1872,176 +2363,483 @@ public class BillingFragment extends Fragment {
 
         int currentDay = 1;
 
-        int nextMonthDay = 1;
+        for (int row = 0;
+             row < rows;
+             row++) {
 
-        for (int row = 0; row < rows; row++) {
+            LinearLayout calendarRow =
+                    new LinearLayout(
+                            requireContext()
+                    );
 
-            LinearLayout calendarRow = new LinearLayout(requireContext());
+            calendarRow.setOrientation(
+                    LinearLayout.HORIZONTAL
+            );
 
-            calendarRow.setOrientation(LinearLayout.HORIZONTAL);
+            for (int column = 0;
+                 column < 7;
+                 column++) {
 
-            calendarRow.setGravity(Gravity.CENTER);
+                int cell =
+                        row * 7 + column;
 
-            for (int column = 0; column < 7; column++) {
+                FrameLayout cellLayout =
+                        new FrameLayout(
+                                requireContext()
+                        );
 
-                int cell = row * 7 + column;
+                if (cell < firstDay
+                        || currentDay > daysInMonth) {
 
-                FrameLayoutWithDate dateCell = new FrameLayoutWithDate(requireContext());
+                    TextView empty =
+                            createCalendarText();
 
-                LinearLayout.LayoutParams cellParams = new LinearLayout.LayoutParams(0, dp(48), 1);
-
-                if (cell < firstDayOfWeek) {
-
-                    int previousDate = previousMonthDays - firstDayOfWeek + cell + 1;
-
-                    TextView dateText = createPopupDateText();
-
-                    dateText.setText(String.valueOf(previousDate));
-
-                    dateText.setTextColor(Color.rgb(190, 190, 190));
-
-                    dateCell.addView(dateText, new FrameLayout.LayoutParams(dp(34), dp(34), Gravity.CENTER));
-
-                } else if (currentDay <= daysInMonth) {
-
-                    int day = currentDay++;
-
-                    TextView dateText = createPopupDateText();
-
-                    dateText.setText(String.valueOf(day));
-
-                    String dateKey = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(createDate(month, day));
-
-                    String status = tiffinStatus.get(dateKey);
-
-                    applyMemberPopupDateStatus(dateText, status);
-
-                    dateCell.addView(dateText, new FrameLayout.LayoutParams(dp(34), dp(34), Gravity.CENTER));
+                    cellLayout.addView(
+                            empty,
+                            new FrameLayout.LayoutParams(
+                                    dp(34),
+                                    dp(34),
+                                    Gravity.CENTER
+                            )
+                    );
 
                 } else {
 
-                    TextView dateText = createPopupDateText();
+                    int day = currentDay++;
 
-                    dateText.setText(String.valueOf(nextMonthDay++));
+                    String key =
+                            new SimpleDateFormat(
+                                    "yyyy-MM-dd",
+                                    Locale.getDefault()
+                            ).format(
+                                    createDate(
+                                            month,
+                                            day
+                                    )
+                            );
 
-                    dateText.setTextColor(Color.rgb(190, 190, 190));
+                    TiffinRecord record =
+                            records.get(key);
 
-                    dateCell.addView(dateText, new FrameLayout.LayoutParams(dp(34), dp(34), Gravity.CENTER));
+                    // =================================================
+                    // CHANGED CALENDAR UI
+                    // Each date now has separate Lunch and Dinner
+                    // status indicators.
+                    // =================================================
+
+                    LinearLayout dateContainer =
+                            new LinearLayout(
+                                    requireContext()
+                            );
+
+                    dateContainer.setOrientation(
+                            LinearLayout.VERTICAL
+                    );
+
+                    dateContainer.setGravity(
+                            Gravity.CENTER
+                    );
+
+                    TextView date =
+                            new TextView(requireContext());
+
+                    date.setText(
+                            String.valueOf(day)
+                    );
+
+                    date.setGravity(
+                            Gravity.CENTER
+                    );
+
+                    date.setTextSize(11);
+
+                    date.setTextColor(
+                            TEXT_PRIMARY
+                    );
+
+                    date.setTypeface(
+                            Typeface.DEFAULT,
+                            Typeface.BOLD
+                    );
+
+                    dateContainer.addView(
+                            date,
+                            new LinearLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    dp(20)
+                            )
+                    );
+
+                    LinearLayout statusRow =
+                            new LinearLayout(
+                                    requireContext()
+                            );
+
+                    statusRow.setOrientation(
+                            LinearLayout.HORIZONTAL
+                    );
+
+                    statusRow.setGravity(
+                            Gravity.CENTER
+                    );
+
+                    // -------------------------------------------------
+                    // LUNCH STATUS
+                    // -------------------------------------------------
+
+                    TextView lunchStatus =
+                            createMealStatusBadge("L");
+
+                    // -------------------------------------------------
+                    // DINNER STATUS
+                    // -------------------------------------------------
+
+                    TextView dinnerStatus =
+                            createMealStatusBadge("D");
+
+                    applyMealStatus(
+                            lunchStatus,
+                            record == null
+                                    ? null
+                                    : record.getLunchStatus()
+                    );
+
+                    applyMealStatus(
+                            dinnerStatus,
+                            record == null
+                                    ? null
+                                    : record.getDinnerStatus()
+                    );
+
+                    statusRow.addView(
+                            lunchStatus,
+                            new LinearLayout.LayoutParams(
+                                    dp(15),
+                                    dp(15)
+                            )
+                    );
+
+                    LinearLayout.LayoutParams dinnerParams =
+                            new LinearLayout.LayoutParams(
+                                    dp(15),
+                                    dp(15)
+                            );
+
+                    dinnerParams.setMargins(
+                            dp(3),
+                            0,
+                            0,
+                            0
+                    );
+
+                    statusRow.addView(
+                            dinnerStatus,
+                            dinnerParams
+                    );
+
+                    dateContainer.addView(
+                            statusRow,
+                            new LinearLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    dp(18)
+                            )
+                    );
+
+                    cellLayout.addView(
+                            dateContainer,
+                            new FrameLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    dp(45),
+                                    Gravity.CENTER
+                            )
+                    );
                 }
 
-                calendarRow.addView(dateCell, cellParams);
+                calendarRow.addView(
+                        cellLayout,
+                        new LinearLayout.LayoutParams(
+                                0,
+                                dp(48),
+                                1
+                        )
+                );
             }
 
-            calendarContainer.addView(calendarRow);
+            container.addView(calendarRow);
         }
     }
 
     // =========================================================
-    // CREATE DATE TEXT
+    // CREATE MEAL STATUS BADGE
     // =========================================================
 
-    private TextView createPopupDateText() {
+    private TextView createMealStatusBadge(
+            String label) {
 
-        TextView dateText = new TextView(requireContext());
+        TextView badge =
+                new TextView(requireContext());
 
-        dateText.setGravity(Gravity.CENTER);
+        badge.setText(label);
 
-        dateText.setTextSize(12);
+        badge.setGravity(
+                Gravity.CENTER
+        );
 
-        dateText.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        badge.setTextSize(8);
 
-        dateText.setTextColor(TEXT_PRIMARY);
+        badge.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
 
-        return dateText;
+        badge.setTextColor(
+                Color.WHITE
+        );
+
+        return badge;
     }
 
     // =========================================================
-    // APPLY TIFFIN STATUS COLOR
+    // APPLY INDIVIDUAL MEAL STATUS
     // =========================================================
 
-    private void applyMemberPopupDateStatus(TextView dateText, String status) {
+    private void applyMealStatus(
+            TextView badge,
+            String status) {
 
-        if (status != null && "full".equalsIgnoreCase(status.trim())) {
+        String normalized =
+                normalizeStatus(status);
 
-            setCalendarCircle(dateText, FULL_TIFFIN_BG, FULL_TIFFIN_TEXT);
+        if ("full".equals(normalized)) {
 
-        } else if (status != null && "half".equalsIgnoreCase(status.trim())) {
+            setMealStatusBadge(
+                    badge,
+                    FULL_TEXT
+            );
 
-            setCalendarCircle(dateText, HALF_TIFFIN_BG, HALF_TIFFIN_TEXT);
+        } else if ("half".equals(normalized)) {
+
+            setMealStatusBadge(
+                    badge,
+                    HALF_TEXT
+            );
 
         } else {
 
-            setCalendarCircle(dateText, NOT_COLLECTED_BG, NOT_COLLECTED_TEXT);
+            setMealStatusBadge(
+                    badge,
+                    NOT_TEXT
+            );
         }
     }
 
     // =========================================================
-    // CREATE DATE
+    // SET MEAL STATUS BADGE
     // =========================================================
 
-    private Date createDate(Calendar month, int day) {
+    private void setMealStatusBadge(
+            TextView badge,
+            int color) {
 
-        Calendar calendar = (Calendar) month.clone();
+        GradientDrawable drawable =
+                new GradientDrawable();
 
-        calendar.set(Calendar.DAY_OF_MONTH, day);
+        drawable.setShape(
+                GradientDrawable.OVAL
+        );
 
-        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        drawable.setColor(color);
 
-        calendar.set(Calendar.MINUTE, 0);
-
-        calendar.set(Calendar.SECOND, 0);
-
-        calendar.set(Calendar.MILLISECOND, 0);
-
-        return calendar.getTime();
+        badge.setBackground(drawable);
     }
 
     // =========================================================
-    // LEGEND ITEM
+    // CALENDAR STATUS
     // =========================================================
 
-    private void addLegendItem(LinearLayout parent, int backgroundColor, int textColor, String text) {
+    /*
+     * Kept as a helper for compatibility.
+     *
+     * The calendar itself now uses applyMealStatus()
+     * separately for Lunch and Dinner.
+     */
+    private void applyCalendarStatus(
+            TextView text,
+            TiffinRecord record) {
 
-        LinearLayout item = new LinearLayout(requireContext());
+        if (record == null) {
 
-        item.setOrientation(LinearLayout.HORIZONTAL);
+            setCalendarCircle(
+                    text,
+                    NOT_BG,
+                    NOT_TEXT
+            );
 
-        item.setGravity(Gravity.CENTER_VERTICAL);
+            return;
+        }
 
-        item.setPadding(dp(5), 0, dp(5), 0);
+        boolean full =
+                "full".equalsIgnoreCase(
+                        normalizeStatus(
+                                record.getLunchStatus()
+                        )
+                )
+                        || "full".equalsIgnoreCase(
+                        normalizeStatus(
+                                record.getDinnerStatus()
+                        )
+                );
 
-        TextView circle = new TextView(requireContext());
+        boolean half =
+                "half".equalsIgnoreCase(
+                        normalizeStatus(
+                                record.getLunchStatus()
+                        )
+                )
+                        || "half".equalsIgnoreCase(
+                        normalizeStatus(
+                                record.getDinnerStatus()
+                        )
+                );
 
-        circle.setBackground(createCircleDrawable(backgroundColor));
+        if (full) {
 
-        item.addView(circle, new LinearLayout.LayoutParams(dp(12), dp(12)));
+            setCalendarCircle(
+                    text,
+                    FULL_BG,
+                    FULL_TEXT
+            );
 
-        TextView label = new TextView(requireContext());
+        } else if (half) {
 
-        label.setText(text);
+            setCalendarCircle(
+                    text,
+                    HALF_BG,
+                    HALF_TEXT
+            );
+
+        } else {
+
+            setCalendarCircle(
+                    text,
+                    NOT_BG,
+                    NOT_TEXT
+            );
+        }
+    }
+
+    // =========================================================
+    // CALENDAR HELPERS
+    // =========================================================
+
+    private TextView createCalendarText() {
+
+        TextView text =
+                new TextView(requireContext());
+
+        text.setGravity(Gravity.CENTER);
+
+        text.setTextSize(12);
+
+        text.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+
+        return text;
+    }
+
+    private void setCalendarCircle(
+            TextView text,
+            int backgroundColor,
+            int textColor) {
+
+        GradientDrawable drawable =
+                new GradientDrawable();
+
+        drawable.setShape(
+                GradientDrawable.OVAL
+        );
+
+        drawable.setColor(backgroundColor);
+
+        text.setBackground(drawable);
+
+        text.setTextColor(textColor);
+    }
+
+    private void addLegendItem(
+            LinearLayout parent,
+            int backgroundColor,
+            int textColor,
+            String labelText) {
+
+        LinearLayout item =
+                new LinearLayout(
+                        requireContext()
+                );
+
+        item.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
+
+        item.setGravity(
+                Gravity.CENTER_VERTICAL
+        );
+
+        TextView circle =
+                new TextView(requireContext());
+
+        circle.setBackground(
+                createCircleDrawable(
+                        backgroundColor
+                )
+        );
+
+        item.addView(
+                circle,
+                new LinearLayout.LayoutParams(
+                        dp(12),
+                        dp(12)
+                )
+        );
+
+        TextView label =
+                new TextView(requireContext());
+
+        label.setText(labelText);
 
         label.setTextSize(10);
 
         label.setTextColor(textColor);
 
-        LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
 
-        labelParams.setMargins(dp(4), 0, dp(5), 0);
+        params.setMargins(
+                dp(4),
+                0,
+                dp(8),
+                0
+        );
 
-        item.addView(label, labelParams);
+        item.addView(label, params);
 
         parent.addView(item);
     }
 
-    // =========================================================
-    // CIRCLE DRAWABLE
-    // =========================================================
+    private GradientDrawable createCircleDrawable(
+            int color) {
 
-    private GradientDrawable createCircleDrawable(int color) {
+        GradientDrawable drawable =
+                new GradientDrawable();
 
-        GradientDrawable drawable = new GradientDrawable();
-
-        drawable.setShape(GradientDrawable.OVAL);
+        drawable.setShape(
+                GradientDrawable.OVAL
+        );
 
         drawable.setColor(color);
 
@@ -2049,61 +2847,571 @@ public class BillingFragment extends Fragment {
     }
 
     // =========================================================
-    // CALENDAR CIRCLE
+    // HELPERS
     // =========================================================
 
-    private void setCalendarCircle(TextView textView, int backgroundColor, int textColor) {
+    private boolean isRecordInSelectedMonth(
+            String date) {
 
-        GradientDrawable background = new GradientDrawable();
+        if (date == null
+                || date.trim().isEmpty()) {
+            return false;
+        }
 
-        background.setShape(GradientDrawable.OVAL);
+        try {
 
-        background.setColor(backgroundColor);
+            Date parsed =
+                    new SimpleDateFormat(
+                            "yyyy-MM-dd",
+                            Locale.getDefault()
+                    ).parse(date);
 
-        textView.setBackground(background);
+            if (parsed == null) {
+                return false;
+            }
 
-        textView.setTextColor(textColor);
+            Calendar record =
+                    Calendar.getInstance();
 
-        textView.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-    }
+            record.setTime(parsed);
 
-    // =========================================================
-    // BILLING MEMBER SEARCH MODEL
-    // =========================================================
+            return record.get(Calendar.YEAR)
+                    == selectedMonth.get(
+                    Calendar.YEAR
+            )
+                    && record.get(Calendar.MONTH)
+                    == selectedMonth.get(
+                    Calendar.MONTH
+            );
 
-    private static class BillingMember {
+        } catch (Exception e) {
 
-        String memberId;
-
-        String name;
-
-        String email;
-
-        double memberRate;
-
-        BillingMember(String memberId, String name, String email, double memberRate) {
-
-            this.memberId = memberId;
-
-            this.name = name;
-
-            this.email = email;
-
-            this.memberRate = memberRate;
+            return false;
         }
     }
 
-    // =========================================================
-    // SIMPLE FRAME LAYOUT FOR CALENDAR CELLS
-    // =========================================================
+    private int calculateCollectedDays(
+            Member member) {
 
-    private static class FrameLayoutWithDate extends FrameLayout {
+        // This value is displayed as a summary.
+        // It is calculated from records that contain
+        // at least one enabled meal status.
 
-        public FrameLayoutWithDate(@NonNull android.content.Context context) {
+        return 0;
+    }
 
-            super(context);
+    private String getMealConfigurationText(
+            Member member) {
 
-            setForegroundGravity(Gravity.CENTER);
+        if (member.isLunchEnabled()
+                && member.isDinnerEnabled()) {
+
+            return "Lunch + Dinner";
+
+        } else if (member.isLunchEnabled()) {
+
+            return "Lunch only";
+
+        } else if (member.isDinnerEnabled()) {
+
+            return "Dinner only";
         }
+
+        return "No meals enabled";
+    }
+
+    private String normalizeStatus(String status) {
+
+        if (status == null) {
+            return "";
+        }
+
+        return status.trim().toLowerCase(
+                Locale.getDefault()
+        );
+    }
+
+    private String normalizePaymentType(
+            String paymentType) {
+
+        if (paymentType == null
+                || paymentType.trim().isEmpty()) {
+
+            return "daily";
+        }
+
+        return paymentType
+                .trim()
+                .toLowerCase(Locale.getDefault());
+    }
+
+    private String safeMemberName(Member member) {
+
+        if (member.getName() == null
+                || member.getName().trim().isEmpty()) {
+
+            return "Member";
+        }
+
+        return member.getName();
+    }
+
+    private String capitalize(String value) {
+
+        if (value == null
+                || value.isEmpty()) {
+            return "";
+        }
+
+        return value.substring(0, 1)
+                .toUpperCase(Locale.getDefault())
+                + value.substring(1);
+    }
+
+    private String formatMoney(double amount) {
+
+        return String.format(
+                Locale.getDefault(),
+                "₹ %.2f",
+                amount
+        );
+    }
+
+    private String formatNumber(double value) {
+
+        return String.format(
+                Locale.getDefault(),
+                "%.2f",
+                value
+        );
+    }
+
+    private Double parsePositive(
+            EditText editText,
+            String error) {
+
+        String value =
+                editText.getText()
+                        .toString()
+                        .trim();
+
+        if (value.isEmpty()) {
+
+            editText.setError(error);
+
+            return null;
+        }
+
+        try {
+
+            double number =
+                    Double.parseDouble(value);
+
+            if (number <= 0) {
+
+                editText.setError(
+                        "Value must be greater than 0"
+                );
+
+                return null;
+            }
+
+            return number;
+
+        } catch (NumberFormatException e) {
+
+            editText.setError(
+                    "Enter a valid amount"
+            );
+
+            return null;
+        }
+    }
+
+    private Double parseNonNegative(
+            EditText editText,
+            String error) {
+
+        String value =
+                editText.getText()
+                        .toString()
+                        .trim();
+
+        if (value.isEmpty()) {
+
+            editText.setError(error);
+
+            return null;
+        }
+
+        try {
+
+            double number =
+                    Double.parseDouble(value);
+
+            if (number < 0) {
+
+                editText.setError(
+                        "Value cannot be negative"
+                );
+
+                return null;
+            }
+
+            return number;
+
+        } catch (NumberFormatException e) {
+
+            editText.setError(
+                    "Enter a valid amount"
+            );
+
+            return null;
+        }
+    }
+
+    private String getOwnerId() {
+
+        if (sessionManager == null) {
+            return null;
+        }
+
+        return sessionManager.getUid();
+    }
+
+    private Date createDate(
+            Calendar month,
+            int day) {
+
+        Calendar calendar =
+                (Calendar) month.clone();
+
+        calendar.set(
+                Calendar.DAY_OF_MONTH,
+                day
+        );
+
+        calendar.set(
+                Calendar.HOUR_OF_DAY,
+                12
+        );
+
+        calendar.set(
+                Calendar.MINUTE,
+                0
+        );
+
+        calendar.set(
+                Calendar.SECOND,
+                0
+        );
+
+        calendar.set(
+                Calendar.MILLISECOND,
+                0
+        );
+
+        return calendar.getTime();
+    }
+
+    private int dp(float value) {
+
+        return (int) (
+                value
+                        * getResources()
+                        .getDisplayMetrics()
+                        .density
+        );
+    }
+
+    private void showEmptyMessage(
+            String titleText,
+            String subtitleText) {
+
+        LinearLayout layout =
+                new LinearLayout(
+                        requireContext()
+                );
+
+        layout.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
+        layout.setGravity(Gravity.CENTER);
+
+        layout.setPadding(
+                dp(20),
+                dp(60),
+                dp(20),
+                dp(20)
+        );
+
+        TextView title =
+                new TextView(requireContext());
+
+        title.setText(titleText);
+
+        title.setTextSize(17);
+
+        title.setTextColor(Color.BLACK);
+
+        title.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+
+        title.setGravity(Gravity.CENTER);
+
+        TextView subtitle =
+                new TextView(requireContext());
+
+        subtitle.setText(subtitleText);
+
+        subtitle.setTextSize(14);
+
+        subtitle.setTextColor(Color.GRAY);
+
+        subtitle.setGravity(Gravity.CENTER);
+
+        layout.addView(title);
+
+        LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+
+        params.setMargins(
+                0,
+                dp(5),
+                0,
+                0
+        );
+
+        layout.addView(
+                subtitle,
+                params
+        );
+
+        memberContainer.addView(
+                layout,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(250)
+                )
+        );
+    }
+
+    // =========================================================
+    // PDF HELPERS
+    // =========================================================
+
+    private void drawPdfCard(
+            Canvas canvas,
+            Paint paint,
+            float left,
+            float top,
+            float right,
+            float bottom,
+            int fill,
+            int border) {
+
+        paint.setStyle(Paint.Style.FILL);
+
+        paint.setColor(fill);
+
+        canvas.drawRoundRect(
+                left,
+                top,
+                right,
+                bottom,
+                10,
+                10,
+                paint
+        );
+
+        paint.setStyle(Paint.Style.STROKE);
+
+        paint.setStrokeWidth(0.8f);
+
+        paint.setColor(border);
+
+        canvas.drawRoundRect(
+                left,
+                top,
+                right,
+                bottom,
+                10,
+                10,
+                paint
+        );
+
+        paint.setStyle(Paint.Style.FILL);
+    }
+
+    private void drawPdfSummaryRow(
+            Canvas canvas,
+            Paint paint,
+            String label,
+            String value,
+            float y) {
+
+        drawPdfText(
+                canvas,
+                paint,
+                label,
+                47,
+                y,
+                10.5f,
+                Color.rgb(35, 35, 35),
+                false
+        );
+
+        drawPdfTextRight(
+                canvas,
+                paint,
+                value,
+                548,
+                y,
+                10.5f,
+                GREEN,
+                true
+        );
+
+        paint.setColor(
+                Color.rgb(235, 238, 236)
+        );
+
+        canvas.drawRect(
+                47,
+                y + 13,
+                548,
+                y + 14,
+                paint
+        );
+    }
+
+    private void drawPdfText(
+            Canvas canvas,
+            Paint paint,
+            String text,
+            float x,
+            float y,
+            float size,
+            int color,
+            boolean bold) {
+
+        paint.setStyle(Paint.Style.FILL);
+
+        paint.setColor(color);
+
+        paint.setTextSize(size);
+
+        paint.setTextAlign(Paint.Align.LEFT);
+
+        paint.setTypeface(
+                Typeface.create(
+                        "sans",
+                        bold
+                                ? Typeface.BOLD
+                                : Typeface.NORMAL
+                )
+        );
+
+        canvas.drawText(
+                text == null ? "" : text,
+                x,
+                y,
+                paint
+        );
+    }
+
+    private void drawPdfTextRight(
+            Canvas canvas,
+            Paint paint,
+            String text,
+            float x,
+            float y,
+            float size,
+            int color,
+            boolean bold) {
+
+        paint.setStyle(Paint.Style.FILL);
+
+        paint.setColor(color);
+
+        paint.setTextSize(size);
+
+        paint.setTextAlign(Paint.Align.RIGHT);
+
+        paint.setTypeface(
+                Typeface.create(
+                        "sans",
+                        bold
+                                ? Typeface.BOLD
+                                : Typeface.NORMAL
+                )
+        );
+
+        canvas.drawText(
+                text == null ? "" : text,
+                x,
+                y,
+                paint
+        );
+    }
+
+    private void drawPdfTextCenter(
+            Canvas canvas,
+            Paint paint,
+            String text,
+            float x,
+            float y,
+            float size,
+            int color,
+            boolean bold) {
+
+        paint.setStyle(Paint.Style.FILL);
+
+        paint.setColor(color);
+
+        paint.setTextSize(size);
+
+        paint.setTextAlign(Paint.Align.CENTER);
+
+        paint.setTypeface(
+                Typeface.create(
+                        "sans",
+                        bold
+                                ? Typeface.BOLD
+                                : Typeface.NORMAL
+                )
+        );
+
+        canvas.drawText(
+                text == null ? "" : text,
+                x,
+                y,
+                paint
+        );
+    }
+
+    // =========================================================
+    // MEAL SUMMARY
+    // =========================================================
+
+    private static class MealSummary {
+
+        int fullMeals;
+        int halfMeals;
+
+        int lunchFull;
+        int lunchHalf;
+
+        int dinnerFull;
+        int dinnerHalf;
+
+        double units;
+        double amount;
     }
 }

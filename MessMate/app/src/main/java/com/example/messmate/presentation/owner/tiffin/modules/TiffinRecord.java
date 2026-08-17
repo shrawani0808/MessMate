@@ -5,23 +5,40 @@ public class TiffinRecord {
     private String documentId;
 
     private String ownerId;
+
     private String memberUid;
+
     private String memberDocumentId;
 
     private String memberName;
+
     private String phone;
 
     private String date;
 
-    private String tiffin;
+    // =====================================================
+    // MEAL STATUS
+    // =====================================================
 
-    private boolean dinner;
+    // "full", "half", "none"
+    private String lunchStatus;
 
+    // "full", "half", "none"
+    private String dinnerStatus;
+
+
+    // =====================================================
+    // FIRESTORE CONSTRUCTOR
+    // =====================================================
 
     public TiffinRecord() {
         // Required by Firestore
     }
 
+
+    // =====================================================
+    // DOCUMENT ID
+    // =====================================================
 
     public String getDocumentId() {
         return documentId;
@@ -32,6 +49,10 @@ public class TiffinRecord {
     }
 
 
+    // =====================================================
+    // OWNER ID
+    // =====================================================
+
     public String getOwnerId() {
         return ownerId;
     }
@@ -40,6 +61,10 @@ public class TiffinRecord {
         this.ownerId = ownerId;
     }
 
+
+    // =====================================================
+    // MEMBER UID
+    // =====================================================
 
     public String getMemberUid() {
         return memberUid;
@@ -50,6 +75,10 @@ public class TiffinRecord {
     }
 
 
+    // =====================================================
+    // MEMBER DOCUMENT ID
+    // =====================================================
+
     public String getMemberDocumentId() {
         return memberDocumentId;
     }
@@ -58,6 +87,10 @@ public class TiffinRecord {
         this.memberDocumentId = memberDocumentId;
     }
 
+
+    // =====================================================
+    // MEMBER NAME
+    // =====================================================
 
     public String getMemberName() {
         return memberName;
@@ -68,6 +101,10 @@ public class TiffinRecord {
     }
 
 
+    // =====================================================
+    // PHONE
+    // =====================================================
+
     public String getPhone() {
         return phone;
     }
@@ -76,6 +113,10 @@ public class TiffinRecord {
         this.phone = phone;
     }
 
+
+    // =====================================================
+    // DATE
+    // =====================================================
 
     public String getDate() {
         return date;
@@ -86,20 +127,28 @@ public class TiffinRecord {
     }
 
 
-    public String getTiffin() {
-        return tiffin;
+    // =====================================================
+    // LUNCH STATUS
+    // =====================================================
+
+    public String getLunchStatus() {
+        return lunchStatus;
     }
 
-    public void setTiffin(String tiffin) {
-        this.tiffin = tiffin;
+    public void setLunchStatus(String lunchStatus) {
+        this.lunchStatus = lunchStatus;
     }
 
 
-    public boolean isDinner() {
-        return dinner;
+    // =====================================================
+    // DINNER STATUS
+    // =====================================================
+
+    public String getDinnerStatus() {
+        return dinnerStatus;
     }
 
-    public void setDinner(boolean dinner) {
-        this.dinner = dinner;
+    public void setDinnerStatus(String dinnerStatus) {
+        this.dinnerStatus = dinnerStatus;
     }
 }

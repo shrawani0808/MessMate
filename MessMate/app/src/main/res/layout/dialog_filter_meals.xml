@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:orientation="vertical"
+        android:padding="22dp">
+
+        <!-- TITLE -->
+
+        <TextView
+            android:id="@+id/txtFilterTitle"
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:text="Filter Meals"
+
+            android:textColor="@color/text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+
+        <!-- BOTH -->
+
+        <RadioButton
+            android:id="@+id/rbBoth"
+
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+
+            android:layout_marginTop="12dp"
+
+            android:buttonTint="@color/primary"
+
+            android:text="Both"
+
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+
+        <!-- LUNCH ONLY -->
+
+        <RadioButton
+            android:id="@+id/rbLunchOnly"
+
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+
+            android:buttonTint="@color/primary"
+
+            android:text="Lunch Only"
+
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+
+        <!-- DINNER ONLY -->
+
+        <RadioButton
+            android:id="@+id/rbDinnerOnly"
+
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+
+            android:buttonTint="@color/primary"
+
+            android:text="Dinner Only"
+
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+
+        <!-- BUTTONS -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="8dp"
+
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancelFilter"
+
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+
+                android:text="Cancel"
+
+                android:textColor="@color/primary"
+
+                app:backgroundTint="@android:color/transparent"
+                app:cornerRadius="12dp"
+                app:rippleColor="#E8F6EA" />
+
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnApplyFilter"
+
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+
+                android:layout_marginStart="6dp"
+
+                android:text="Apply"
+
+                android:textColor="@android:color/white"
+
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="12dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

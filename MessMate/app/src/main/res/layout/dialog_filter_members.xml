@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="6dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="22dp">
+
+        <!-- TITLE -->
+
+        <TextView
+            android:id="@+id/txtFilterTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:text="Filter Members"
+            android:textColor="@color/text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+
+        <!-- ALL -->
+
+        <RadioButton
+            android:id="@+id/rbAllMembers"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+
+            android:layout_marginTop="12dp"
+
+            android:text="All Members"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+
+            android:buttonTint="@color/primary" />
+
+
+        <!-- MONTHLY -->
+
+        <RadioButton
+            android:id="@+id/rbMonthlyMembers"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+
+            android:text="Monthly Members"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+
+            android:buttonTint="@color/primary" />
+
+
+        <!-- DAILY -->
+
+        <RadioButton
+            android:id="@+id/rbDailyMembers"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+
+            android:text="Daily Members"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+
+            android:buttonTint="@color/primary" />
+
+
+        <!-- CANCEL -->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+
+            android:text="Cancel"
+            android:textColor="@color/primary"
+            android:textSize="14sp"
+
+            app:backgroundTint="@android:color/transparent"
+            app:cornerRadius="12dp"
+            app:strokeWidth="0dp" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

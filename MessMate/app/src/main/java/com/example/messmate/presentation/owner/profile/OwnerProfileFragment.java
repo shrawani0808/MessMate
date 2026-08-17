@@ -1,6 +1,8 @@
 package com.example.messmate.presentation.owner.profile;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -8,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -347,8 +350,9 @@ public class OwnerProfileFragment extends Fragment {
                 showCurrentPasswordForEmailChange(name, email, dialog);
             });
         });
-
         dialog.show();
+        applyWhiteDialogTheme(dialog);
+
     }
 
 
@@ -425,8 +429,8 @@ public class OwnerProfileFragment extends Fragment {
                 reAuthenticateAndUpdateEmail(password, name, newEmail, editDialog, passwordDialog);
             });
         });
-
         passwordDialog.show();
+        applyWhitePasswordDialogTheme(passwordDialog);
     }
 
 
@@ -537,49 +541,87 @@ public class OwnerProfileFragment extends Fragment {
 
         if (currentUser == null) {
 
-            Toast.makeText(requireContext(), "User session expired", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    requireContext(),
+                    "User session expired",
+                    Toast.LENGTH_SHORT
+            ).show();
 
             return;
         }
 
+        View passwordView =
+                LayoutInflater.from(requireContext())
+                        .inflate(
+                                R.layout.dialog_current_password,
+                                null
+                        );
 
-        View passwordView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_current_password, null);
+        TextInputLayout passwordLayout =
+                passwordView.findViewById(
+                        R.id.currentPasswordLayout
+                );
 
+        TextInputEditText etPassword =
+                passwordView.findViewById(
+                        R.id.etCurrentPassword
+                );
 
-        TextInputLayout passwordLayout = passwordView.findViewById(R.id.currentPasswordLayout);
-
-        TextInputEditText etPassword = passwordView.findViewById(R.id.etCurrentPassword);
-
-
-        AlertDialog dialog = new AlertDialog.Builder(requireContext()).setTitle("Current Password").setMessage("Enter your current password to continue.").setView(passwordView).setNegativeButton("Cancel", null).setPositiveButton("Continue", null).create();
-
+        AlertDialog dialog =
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Current Password")
+                        .setMessage(
+                                "Enter your current password to continue."
+                        )
+                        .setView(passwordView)
+                        .setNegativeButton(
+                                "Cancel",
+                                null
+                        )
+                        .setPositiveButton(
+                                "Continue",
+                                null
+                        )
+                        .create();
 
         dialog.setOnShowListener(dialogInterface -> {
 
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            // Apply white dialog appearance
+            applyWhitePasswordDialogTheme(dialog);
+
+            // IMPORTANT:
+            // Set the Continue button listener here
+            dialog.getButton(
+                    AlertDialog.BUTTON_POSITIVE
+            ).setOnClickListener(v -> {
 
                 passwordLayout.setError(null);
 
-                String oldPassword = etPassword.getText().toString();
-
+                String oldPassword =
+                        etPassword.getText()
+                                .toString()
+                                .trim();
 
                 if (TextUtils.isEmpty(oldPassword)) {
 
-                    passwordLayout.setError("Enter your current password");
+                    passwordLayout.setError(
+                            "Enter your current password"
+                    );
 
                     etPassword.requestFocus();
 
                     return;
                 }
 
-
-                verifyOldPassword(oldPassword, dialog);
+                verifyOldPassword(
+                        oldPassword,
+                        dialog
+                );
             });
         });
-
         dialog.show();
+        applyWhitePasswordDialogTheme(dialog);
     }
-
 
     // ============================================================
     // VERIFY OLD PASSWORD
@@ -712,8 +754,8 @@ public class OwnerProfileFragment extends Fragment {
                 updateFirebasePassword(newPassword, dialog);
             });
         });
-
         dialog.show();
+        applyWhitePasswordDialogTheme(dialog);
     }
 
 
@@ -753,7 +795,19 @@ public class OwnerProfileFragment extends Fragment {
 
     private void showLogoutDialog() {
 
-        new AlertDialog.Builder(requireContext()).setTitle("Logout").setMessage("Are you sure you want to logout?").setNegativeButton("Cancel", null).setPositiveButton("Logout", (dialog, which) -> logoutUser()).show();
+        AlertDialog dialog =
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Logout")
+                        .setMessage("Are you sure you want to logout?")
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton(
+                                "Logout",
+                                (dialogInterface, which) -> logoutUser()
+                        )
+                        .create();
+
+        dialog.show();
+        applyWhiteDialogTheme(dialog);
     }
 
 
@@ -779,5 +833,355 @@ public class OwnerProfileFragment extends Fragment {
 
         // 5. Close current activity
         requireActivity().finish();
+    }
+
+
+    private void applyWhiteDialogTheme(AlertDialog dialog) {
+
+        if (dialog == null) {
+            return;
+        }
+
+        // =====================================================
+        // WHITE DIALOG BACKGROUND
+        // =====================================================
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.WHITE)
+            );
+        }
+
+        // =====================================================
+        // TITLE
+        // =====================================================
+
+        int titleId = getResources().getIdentifier(
+                "alertTitle",
+                "id",
+                requireContext().getPackageName()
+        );
+
+        TextView title = dialog.findViewById(titleId);
+
+        if (title != null) {
+            title.setTextColor(Color.BLACK);
+        }
+
+        // =====================================================
+        // MESSAGE
+        // =====================================================
+
+        TextView message = dialog.findViewById(
+                android.R.id.message
+        );
+
+        if (message != null) {
+            message.setTextColor(Color.BLACK);
+        }
+
+        // =====================================================
+        // EDIT TEXTS
+        // =====================================================
+
+        TextInputEditText[] editTexts = {
+
+                dialog.findViewById(R.id.etEditName),
+                dialog.findViewById(R.id.etEditEmail),
+
+                dialog.findViewById(R.id.etCurrentPassword),
+
+                dialog.findViewById(R.id.etNewPassword),
+                dialog.findViewById(R.id.etConfirmNewPassword)
+        };
+
+        for (TextInputEditText editText : editTexts) {
+
+            if (editText != null) {
+
+                editText.setTextColor(Color.BLACK);
+
+                editText.setHintTextColor(
+                        Color.rgb(90, 90, 90)
+                );
+            }
+        }
+
+        // =====================================================
+        // TEXT INPUT LAYOUTS
+        // =====================================================
+
+        TextInputLayout[] layouts = {
+
+                dialog.findViewById(R.id.editNameLayout),
+                dialog.findViewById(R.id.editEmailLayout),
+
+                dialog.findViewById(R.id.currentPasswordLayout),
+
+                dialog.findViewById(R.id.newPasswordLayout),
+                dialog.findViewById(R.id.confirmNewPasswordLayout)
+        };
+
+        for (TextInputLayout layout : layouts) {
+
+            if (layout != null) {
+
+                layout.setDefaultHintTextColor(
+                        android.content.res.ColorStateList.valueOf(
+                                Color.rgb(70, 70, 70)
+                        )
+                );
+
+                layout.setErrorTextColor(
+                        android.content.res.ColorStateList.valueOf(
+                                Color.RED
+                        )
+                );
+            }
+        }
+
+        // =====================================================
+        // BUTTONS
+        // =====================================================
+
+        if (dialog.getButton(
+                AlertDialog.BUTTON_POSITIVE
+        ) != null) {
+
+            dialog.getButton(
+                    AlertDialog.BUTTON_POSITIVE
+            ).setTextColor(
+                    Color.rgb(47, 132, 100)
+            );
+        }
+
+        if (dialog.getButton(
+                AlertDialog.BUTTON_NEGATIVE
+        ) != null) {
+
+            dialog.getButton(
+                    AlertDialog.BUTTON_NEGATIVE
+            ).setTextColor(
+                    Color.rgb(47, 132, 100)
+            );
+        }
+
+        if (dialog.getButton(
+                AlertDialog.BUTTON_NEUTRAL
+        ) != null) {
+
+            dialog.getButton(
+                    AlertDialog.BUTTON_NEUTRAL
+            ).setTextColor(
+                    Color.rgb(47, 132, 100)
+            );
+        }
+
+        // =====================================================
+        // FORCE ALL OTHER TEXT TO BLACK
+        // =====================================================
+
+        View dialogView = dialog.getWindow() != null
+                ? dialog.getWindow().getDecorView()
+                : null;
+
+        if (dialogView != null) {
+            setAllTextViewsBlack(dialogView);
+        }
+    }
+    private void applyWhitePasswordDialogTheme(AlertDialog dialog) {
+
+        if (dialog == null) {
+            return;
+        }
+
+        // =====================================================
+        // WHITE BACKGROUND
+        // =====================================================
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.WHITE)
+            );
+        }
+
+        // =====================================================
+        // TITLE
+        // =====================================================
+
+        int titleId = getResources().getIdentifier(
+                "alertTitle",
+                "id",
+                requireContext().getPackageName()
+        );
+
+        TextView title = dialog.findViewById(titleId);
+
+        if (title != null) {
+            title.setTextColor(Color.BLACK);
+        }
+
+        // =====================================================
+        // MESSAGE
+        // =====================================================
+
+        TextView message = dialog.findViewById(
+                android.R.id.message
+        );
+
+        if (message != null) {
+            message.setTextColor(Color.BLACK);
+        }
+
+        // =====================================================
+        // CURRENT PASSWORD
+        // =====================================================
+
+        TextInputEditText currentPassword =
+                dialog.findViewById(
+                        R.id.etCurrentPassword
+                );
+
+        if (currentPassword != null) {
+
+            currentPassword.setTextColor(Color.BLACK);
+
+            currentPassword.setHintTextColor(
+                    Color.rgb(90, 90, 90)
+            );
+        }
+
+        // =====================================================
+        // NEW PASSWORD
+        // =====================================================
+
+        TextInputEditText newPassword =
+                dialog.findViewById(
+                        R.id.etNewPassword
+                );
+
+        if (newPassword != null) {
+
+            newPassword.setTextColor(Color.BLACK);
+
+            newPassword.setHintTextColor(
+                    Color.rgb(90, 90, 90)
+            );
+        }
+
+        // =====================================================
+        // CONFIRM PASSWORD
+        // =====================================================
+
+        TextInputEditText confirmPassword =
+                dialog.findViewById(
+                        R.id.etConfirmNewPassword
+                );
+
+        if (confirmPassword != null) {
+
+            confirmPassword.setTextColor(Color.BLACK);
+
+            confirmPassword.setHintTextColor(
+                    Color.rgb(90, 90, 90)
+            );
+        }
+
+        // =====================================================
+        // INPUT LABELS
+        // =====================================================
+
+        TextInputLayout[] layouts = {
+
+                dialog.findViewById(
+                        R.id.currentPasswordLayout
+                ),
+
+                dialog.findViewById(
+                        R.id.newPasswordLayout
+                ),
+
+                dialog.findViewById(
+                        R.id.confirmNewPasswordLayout
+                )
+        };
+
+        for (TextInputLayout layout : layouts) {
+
+            if (layout != null) {
+
+                layout.setDefaultHintTextColor(
+                        android.content.res.ColorStateList.valueOf(
+                                Color.rgb(70, 70, 70)
+                        )
+                );
+
+                layout.setErrorTextColor(
+                        android.content.res.ColorStateList.valueOf(
+                                Color.RED
+                        )
+                );
+            }
+        }
+
+        // =====================================================
+        // BUTTONS
+        // =====================================================
+
+        if (dialog.getButton(
+                AlertDialog.BUTTON_POSITIVE
+        ) != null) {
+
+            dialog.getButton(
+                    AlertDialog.BUTTON_POSITIVE
+            ).setTextColor(
+                    Color.rgb(47, 132, 100)
+            );
+        }
+
+        if (dialog.getButton(
+                AlertDialog.BUTTON_NEGATIVE
+        ) != null) {
+
+            dialog.getButton(
+                    AlertDialog.BUTTON_NEGATIVE
+            ).setTextColor(
+                    Color.rgb(47, 132, 100)
+            );
+        }
+
+        // =====================================================
+        // FORCE TEXT BLACK
+        // =====================================================
+
+        View dialogView = dialog.getWindow() != null
+                ? dialog.getWindow().getDecorView()
+                : null;
+
+        if (dialogView != null) {
+            setAllTextViewsBlack(dialogView);
+        }
+    }
+    private void setAllTextViewsBlack(View view) {
+
+        if (view instanceof TextView
+                && !(view instanceof android.widget.Button)) {
+
+            TextView textView = (TextView) view;
+
+            textView.setTextColor(Color.BLACK);
+        }
+
+        if (view instanceof ViewGroup) {
+
+            ViewGroup group = (ViewGroup) view;
+
+            for (int i = 0; i < group.getChildCount(); i++) {
+
+                setAllTextViewsBlack(
+                        group.getChildAt(i)
+                );
+            }
+        }
     }
 }
